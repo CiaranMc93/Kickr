@@ -67,7 +67,7 @@ public class Login extends AppCompatActivity implements LoaderCallbacks<Cursor> 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.login);
+        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
