@@ -1,0 +1,140 @@
+	/**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            if(show == true)
+            {
+                appBarLayout.setAlpha(0.5f);
+            }
+            else
+            {
+                appBarLayout.setAlpha(1f);
+            }
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+
+            if(show == true)
+            {
+                appBarLayout.setAlpha(0.5f);
+            }
+            else
+            {
+                appBarLayout.setAlpha(1f);
+            }
+        }
+    }
+	
+	/**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class FixtureRetrieval extends AsyncTask<Void, Void, String>
+    {
+        private String county = "";
+
+        public FixtureRetrieval(String county)
+        {
+            county = county.toLowerCase();
+        }
+
+        @Override
+        protected String doInBackground(Void... params)
+        {
+            URL url = null;
+            HttpURLConnection urlConnection = null;
+            StringBuilder sb = null;
+
+            try
+            {
+                url = new URL("https://kickr-api.herokuapp.com/fixtures/" + "laois");
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                BufferedReader br = null;
+                sb = new StringBuilder();
+
+                String line;
+
+                try {
+
+                    br = new BufferedReader(new InputStreamReader(in));
+
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line);
+                    }
+
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    if (br != null)
+                    {
+                        try
+                        {
+                            br.close();
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }//end if
+                }//end finally
+            }//end try
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            return sb.toString();
+        }
+
+
+        @Override
+        protected void onPostExecute(final String success)
+        {
+            showProgress(false);
+
+            if (!success.equals(""))
+            {
+               String fixtures = success;
+
+                System.out.print("Success: " + fixtures);
+            }
+            else
+            {
+                //logic here
+            }
+        }
+
+        @Override
+        protected void onCancelled()
+        {
+            showProgress(false);
+        }
+    }
