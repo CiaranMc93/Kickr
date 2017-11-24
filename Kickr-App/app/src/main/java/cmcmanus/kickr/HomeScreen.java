@@ -31,14 +31,14 @@ public class HomeScreen extends AppCompatActivity {
 
                 try {
 
-                    Intent intent = new Intent(getApplicationContext(), Fixtures.class);
+                    Intent intent = new Intent(getApplicationContext(), CountiesSelection.class);
                     startActivity(intent);
                     finish();  // Finish splash activity since it is no more needed
                 } catch (Exception ignored) {
                     ignored.printStackTrace();
                 }
             }
-        }, 3000);  // 3 seconds
+        }, 2300);  // 2.3 seconds
     }
 
     @Override

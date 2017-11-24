@@ -31,4 +31,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-ads:11.0.2'
     compile 'com.android.support:design:25.3.1'
     testCompile 'junit:junit:4.12'
+
+    //add library
+    compile 'com.github.MorochoRochaDarwin:HorizontalScrollMenu:2.0.0'
 }
