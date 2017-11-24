@@ -147,7 +147,6 @@ public class Fixtures extends AppCompatActivity
         System.out.println(new SimpleDateFormat("EE", Locale.ENGLISH).format(date.getTime()));
 
         today.setTextColor(getResources().getColor(R.color.white));
-
     }
 
     /**

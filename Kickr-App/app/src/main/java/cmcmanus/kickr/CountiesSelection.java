@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 public class CountiesSelection extends AppCompatActivity {
 
-    String[] data = { "Laois", "Offaly", "Leitrim", "Dublin", "Clare", "Cork", "Galway", "Kilkenny", "Wexford", "Wicklow", "Kildare", "Carlow", "Westmeath", "Mayo", "Sligo", "Waterford", "Kerry"};
+    String[] data = { "Laois", "Cork", "Carlow", "Waterford"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
