@@ -29,6 +29,7 @@
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".Fixtures"  android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".CountiesSelection"  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".Information.Information"  android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".Pop" android:theme="@style/AppTheme.CustomTheme"></activity>
     </application>
 

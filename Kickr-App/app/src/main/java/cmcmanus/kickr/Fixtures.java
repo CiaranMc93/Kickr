@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.icu.text.IDNA;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 
 import cmcmanus.kickr.DBAdapter.DBAdapter;
+import cmcmanus.kickr.Information.Information;
 
 public class Fixtures extends AppCompatActivity
 {
@@ -49,6 +51,9 @@ public class Fixtures extends AppCompatActivity
 
     //network variable
     FixtureRetrieval retrieveData = null;
+
+    //button variable
+    Button info;
 
     //define variables needed
     private String countyName = "";
@@ -110,6 +115,19 @@ public class Fixtures extends AppCompatActivity
         {
             public void onClick(View v) {
                 // TODO Auto-generated method stub
+            }
+        });
+
+        //get the button
+        info = (Button)findViewById(R.id.button2);
+
+        info.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(getApplicationContext(), Information.class);
+                startActivity(intent);
             }
         });
 

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -18,6 +19,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import cmcmanus.kickr.Information.Information;
+
 public class CountiesSelection extends AppCompatActivity {
 
     //expandable list adapter variables
@@ -25,6 +28,9 @@ public class CountiesSelection extends AppCompatActivity {
     ExpandableListView expListView;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
+
+    //button variable
+    Button info;
 
     List<String> leinster = new ArrayList<String>();
     List<String> munster = new ArrayList<String>();
@@ -46,12 +52,25 @@ public class CountiesSelection extends AppCompatActivity {
         // get the listview
         expListView = (ExpandableListView) findViewById(R.id.lvExp);
 
+        //get the button
+        info = (Button)findViewById(R.id.button2);
+
         listAdapter = new ExpandableListAdapter(CountiesSelection.this, listDataHeader, listDataChild);
 
         // setting list adapter
         expListView.setAdapter(listAdapter);
 
         Intent i = null;
+
+        info.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(getApplicationContext(), Information.class);
+                startActivity(intent);
+            }
+        });
         // Listview on child click listener
         expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 
