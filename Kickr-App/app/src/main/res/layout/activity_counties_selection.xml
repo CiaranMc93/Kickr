@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="cmcmanus.kickr.CountiesSelection">
+    tools:context="cmcmanus.kickr.CountiesSelection"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/action_bar_const"
@@ -30,18 +31,10 @@
 
     </RelativeLayout>
 
-    <GridView
-        android:id="@+id/countyGrid"
-        android:layout_width="wrap_content"
+    <ExpandableListView
+        android:id="@+id/lvExp"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="8dp"
-        android:columnWidth="120dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        tools:layout_editor_absoluteY="8dp"
+        android:layout_width="match_parent"
         android:layout_below="@+id/action_bar_const"/>
 
 </LinearLayout>

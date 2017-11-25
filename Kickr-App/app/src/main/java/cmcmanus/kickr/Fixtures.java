@@ -37,14 +37,20 @@ import cmcmanus.kickr.DBAdapter.DBAdapter;
 
 public class Fixtures extends AppCompatActivity
 {
-    //create the views
+    //progress view variable
     public View mProgressView;
     public View backgroundView;
+
+    //define our expandable list variables
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
+
+    //network variable
     FixtureRetrieval retrieveData = null;
+
+    //define variables needed
     private String countyName = "";
     private String jsonDataResult = "";
     private ArrayList<JSONObject> match = null;
@@ -133,7 +139,7 @@ public class Fixtures extends AppCompatActivity
 
     private void updateDatabase()
     {
-        //retrieve the data from the server
+        //retrieve the counties from the server
         storeDataFlag = false;
         retrieveData = new FixtureRetrieval(county);
         retrieveData.execute();
@@ -304,7 +310,7 @@ public class Fixtures extends AppCompatActivity
 
     /*
     *
-    *  Handle the list data
+    *  Handle the list counties
     *
      */
     private void createAndHandleList(ArrayList<JSONObject> match_list)
@@ -315,7 +321,7 @@ public class Fixtures extends AppCompatActivity
             //update the match json object list
             match = match_list;
 
-            // preparing list data
+            // preparing list counties
             prepareListData();
 
             // get the listview
@@ -366,29 +372,6 @@ public class Fixtures extends AppCompatActivity
                     return false;
                 }
             });
-
-            // Listview Group expanded listener
-            expListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-
-                @Override
-                public void onGroupExpand(int groupPosition) {
-                    Toast.makeText(getApplicationContext(),
-                            listDataHeader.get(groupPosition) + " Expanded",
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            // Listview Group collasped listener
-            expListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-
-                @Override
-                public void onGroupCollapse(int groupPosition) {
-                    Toast.makeText(getApplicationContext(),
-                            listDataHeader.get(groupPosition) + " Collapsed",
-                            Toast.LENGTH_SHORT).show();
-
-                }
-            });
         }
         catch (Exception e)
         {
@@ -397,14 +380,14 @@ public class Fixtures extends AppCompatActivity
     }
 
     /*
-    * Preparing the list data
+    * Preparing the list counties
     */
     private void prepareListData()
     {
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<String>>();
 
-        // Adding child data
+        // Adding child counties
         //this will be the competition in order of importance eg. senior football, hurling down to u12.
         listDataHeader.add("Senior Football Fixtures");
         listDataHeader.add("Senior Hurling Fixtures");
@@ -423,7 +406,7 @@ public class Fixtures extends AppCompatActivity
         List<String> underageFootball = new ArrayList<String>();
         List<String> underageHurling = new ArrayList<String>();
 
-        //create a list for each competition to hold all of their data
+        //create a list for each competition to hold all of their counties
         seniorFootballJSON = new ArrayList<JSONObject>();
         seniorHurlingJSON = new ArrayList<JSONObject>();
         intermediate_junior_football_fixturesJSON = new ArrayList<JSONObject>();
@@ -440,7 +423,7 @@ public class Fixtures extends AppCompatActivity
                 String homeTeam = match.get(i).getString("homeTeam");
                 String awayTeam = match.get(i).getString("awayTeam");
 
-                //adding the match data for each competition
+                //adding the match counties for each competition
                 if(competition.contains("senior") && competition.contains("football"))
                 {
                     seniorFootball.add(homeTeam + " vs. " + awayTeam);
@@ -534,13 +517,13 @@ public class Fixtures extends AppCompatActivity
                 }//end if
             }//end for
 
-            listDataChild.put(listDataHeader.get(0), seniorFootball); // Header, Child data
-            listDataChild.put(listDataHeader.get(1), seniorHurling); // Header, Child data
-            listDataChild.put(listDataHeader.get(2), intermediate_junior_football_fixtures); // Header, Child data
-            listDataChild.put(listDataHeader.get(3), intermediate_junior_hurling_fixtures); // Header, Child data
-            listDataChild.put(listDataHeader.get(4), minor_21_fixtures); // Header, Child data
-            listDataChild.put(listDataHeader.get(5), underageFootball); // Header, Child data
-            listDataChild.put(listDataHeader.get(6), underageHurling); // Header, Child data
+            listDataChild.put(listDataHeader.get(0), seniorFootball); // Header, Child counties
+            listDataChild.put(listDataHeader.get(1), seniorHurling); // Header, Child counties
+            listDataChild.put(listDataHeader.get(2), intermediate_junior_football_fixtures); // Header, Child counties
+            listDataChild.put(listDataHeader.get(3), intermediate_junior_hurling_fixtures); // Header, Child counties
+            listDataChild.put(listDataHeader.get(4), minor_21_fixtures); // Header, Child counties
+            listDataChild.put(listDataHeader.get(5), underageFootball); // Header, Child counties
+            listDataChild.put(listDataHeader.get(6), underageHurling); // Header, Child counties
 
         } catch (JSONException e)
         {
