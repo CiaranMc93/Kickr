@@ -1,4 +1,4 @@
-package cmcmanus.kickr.DBAdapter;
+package cmcmanus.kickr.Data_Storage;
 
 /**
  * Created by cmcmanus on 9/5/2017.

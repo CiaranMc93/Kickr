@@ -6,6 +6,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import cmcmanus.kickr.Fixtures;
 
@@ -15,11 +16,34 @@ import cmcmanus.kickr.Fixtures;
 
 public class CustomViews
 {
-    CardView view = null;
+    Context context = null;
 
-    public void customCardView(Context context)
+    //views
+    CardView view = null;
+    LinearLayout cardLayout = null;
+
+    //constructed views
+    CardView cardView = null;
+    RelativeLayout actionBar = null;
+
+
+    public CustomViews(Context context)
     {
-        CardView view = new CardView(context);
+        this.context = context;
+    }
+
+    public RelativeLayout getActionBar() { return actionBar; };
+
+    public void setActionBar()
+    {
+
+    }
+
+    public CardView getCard() { return view; };
+
+    public void setCustomCardView()
+    {
+        cardView = new CardView(context);
 
         // Set the CardView layoutParams
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -27,27 +51,45 @@ public class CustomViews
                 RecyclerView.LayoutParams.WRAP_CONTENT
         );
 
-        params.setMargins(5,5,5,0);
+        params.setMargins(10,20,10,0);
 
-        view.setLayoutParams(params);
+        cardView.setLayoutParams(params);
 
         // Set CardView corner radius
-        view.setRadius(9);
+        cardView.setRadius(12);
 
         // Set cardView content padding
-        view.setContentPadding(15, 15, 15, 15);
+        cardView.setContentPadding(15, 15, 15, 15);
 
         // Set a background color for CardView
-        view.setCardBackgroundColor(Color.parseColor("#FFC6D6C3"));
+        cardView.setCardBackgroundColor(Color.parseColor("#FFC6D6C3"));
 
         // Set the CardView maximum elevation
-        view.setMaxCardElevation(15);
+        cardView.setMaxCardElevation(31);
 
         // Set CardView elevation
-        view.setCardElevation(5);
+        cardView.setCardElevation(30);
 
-        this.view = view;
+        cardLayout = new LinearLayout(context);
+
+        cardLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        cardLayout.setOrientation(LinearLayout.VERTICAL);
+
+        for(int j=0; j < 4; j++)
+        {
+            // Initialize a new TextView to put in CardView
+            TextView tv = new TextView(context);
+            tv.setLayoutParams(params);
+            tv.setText("CardView\nProgrammatically");
+            tv.setTextColor(Color.RED);
+
+            //add text view to linear layout
+            cardLayout.addView(tv);
+        }
+
+        //add linear layout to cardview
+        cardView.addView(cardLayout);
+
+        this.view = cardView;
     }
-
-    public CardView getCard() { return view; };
 }
