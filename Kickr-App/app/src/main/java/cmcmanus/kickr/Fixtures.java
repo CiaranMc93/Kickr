@@ -4,15 +4,21 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.icu.text.IDNA;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,11 +35,10 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
+import cmcmanus.kickr.Custom_Views.CustomViews;
 import cmcmanus.kickr.DBAdapter.DBAdapter;
 import cmcmanus.kickr.Information.Information;
 
@@ -51,6 +56,10 @@ public class Fixtures extends AppCompatActivity
 
     //network variable
     FixtureRetrieval retrieveData = null;
+
+    //display the cards in a relative layout
+    RelativeLayout const_action_bar = null;
+    LinearLayout cardView = null;
 
     //button variable
     Button info;
@@ -72,6 +81,12 @@ public class Fixtures extends AppCompatActivity
     Button dateSearch;
 
     private JSONArray matches = null;
+    private ArrayList<JSONObject> todayMatches = null;
+    private ArrayList<JSONObject> yesterdayMatches = null;
+    private ArrayList<JSONObject> tomorrowMatches = null;
+    private ArrayList<JSONObject> earlierMatches = null;
+    private ArrayList<JSONObject> laterMatches = null;
+
     List<JSONObject> seniorFootballJSON = null;
     List<JSONObject> seniorHurlingJSON = null;
     List<JSONObject> intermediate_junior_football_fixturesJSON = null;
@@ -80,11 +95,17 @@ public class Fixtures extends AppCompatActivity
     List<JSONObject> underageFootballJSON = null;
     List<JSONObject> underageHurlingJSON = null;
 
-    JSONObject testJson = new JSONObject("{\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Hurling League Division 1\",\"date\":\"29-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}");
-    JSONObject testJson2 = new JSONObject("{\"time\":\"6 00 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"01-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}");
-    JSONObject testJson3 = new JSONObject("{\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}");
-    JSONObject testJson4 = new JSONObject("{\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}");
-    JSONObject testJson5 = new JSONObject("{\"time\":\"7 30 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"08-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}");
+    JSONArray testArray = new JSONArray("[{\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Hurling League Division 1\",\"date\":\"25-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}," +
+            " {\"time\":\"6 00 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"26-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}," +
+            " {\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}," +
+            " {\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"26-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}," +
+            " {\"time\":\"7 30 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"08-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}]");
+
+    //JSONObject testJson = new JSONObject("{\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Hurling League Division 1\",\"date\":\"29-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}");
+    //JSONObject testJson2 = new JSONObject("{\"time\":\"6 00 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"01-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}");
+    //JSONObject testJson3 = new JSONObject("{\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}");
+    //JSONObject testJson4 = new JSONObject("{\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}");
+    //JSONObject testJson5 = new JSONObject("{\"time\":\"7 30 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"08-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}");
 
     public Fixtures() throws JSONException {
     }
@@ -104,6 +125,9 @@ public class Fixtures extends AppCompatActivity
 
         //get instance of calendar for date/time/day of week
         cal = Calendar.getInstance();
+
+        const_action_bar = (RelativeLayout)findViewById(R.id.action_bar_const);
+        cardView = (LinearLayout)findViewById(R.id.comp_display);
 
         //init the buttons
         yesterday = (Button)findViewById(R.id.yesterday);
@@ -131,6 +155,7 @@ public class Fixtures extends AppCompatActivity
             }
         });
 
+        //initialise the buttons for the menu bar
         initMenu();
 
         //instantiate the new database
@@ -145,8 +170,8 @@ public class Fixtures extends AppCompatActivity
         //show the database information
         //if(null == mat || mat.size() == 0)
         //{
-            //pass in the JSONObject list of matches
-          //  createAndHandleList(db.getAllContacts(county));
+            //pass in the JSONObject list of todayMatches
+          //  createRecyclerView(db.getAllContacts(county));
         //}
         //else
         //{
@@ -165,11 +190,6 @@ public class Fixtures extends AppCompatActivity
 
     private void initMenu()
     {
-        //get date time
-        Date date = cal.getTime();
-
-        System.out.println(new SimpleDateFormat("EE", Locale.ENGLISH).format(date.getTime()));
-
         today.setTextColor(getResources().getColor(R.color.white));
     }
 
@@ -293,29 +313,7 @@ public class Fixtures extends AppCompatActivity
             }
             else
             {
-                //logic here
-                try
-                {
-                    //matches = new JSONArray(jsonDataResult);
-                    match = new ArrayList<JSONObject>();
-
-                    //for(int i=0; i < matches.length(); i++)
-                    //{
-                        //create a useable list of json objects
-                        //match.add(i,matches.getJSONObject(i));
-
-                    match.add(0,testJson);
-                    match.add(1,testJson2);
-                    match.add(2,testJson3);
-                    match.add(3,testJson4);
-                    match.add(4,testJson5);
-
-                    createAndHandleList(match);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+                sortMatches();
             }
         }
 
@@ -326,21 +324,105 @@ public class Fixtures extends AppCompatActivity
         }
     }
 
+    private void sortMatches()
+    {
+        //instantiate the array lists to hold the matches
+        todayMatches        = new ArrayList<JSONObject>();
+        yesterdayMatches    = new ArrayList<JSONObject>();
+        tomorrowMatches     = new ArrayList<JSONObject>();
+        earlierMatches      = new ArrayList<JSONObject>();
+        laterMatches        = new ArrayList<JSONObject>();
+
+        //format the date to match our information
+        SimpleDateFormat format1 = new SimpleDateFormat("dd-MM-yyyy");
+
+        String formatDateTime = format1.format(cal.getTime());
+        System.out.println(formatDateTime);
+
+        today.setTextColor(getResources().getColor(R.color.white));
+
+        //sort the todayMatches into different arrays based on date and time
+        try
+        {
+            //matches = new JSONArray(jsonDataResult);
+
+            match = new ArrayList<JSONObject>();
+
+            for(int i=0; i < testArray.length(); i++)
+            {
+                //separate out all the matches into sorted order
+                if(testArray.getJSONObject(i).getString("date").equals(formatDateTime))
+                {
+                    //add the match to the specific result set
+                    todayMatches.add(todayMatches.listIterator().nextIndex(),testArray.getJSONObject(i));
+                }
+                else
+                {
+                    //get the day/month value in integer format
+                    //format the date to match our information
+                    SimpleDateFormat formatDay = new SimpleDateFormat("dd");
+                    SimpleDateFormat formatMonth = new SimpleDateFormat("MM");
+
+                    int day = Integer.parseInt(formatDay.format(cal.getTime()));
+                    int month = Integer.parseInt(formatMonth.format(cal.getTime()));
+
+                    String date = testArray.getJSONObject(i).get("date").toString();
+
+                    String[] split = date.split("-");
+                    int dayStr = Integer.parseInt(split[0]);
+                    int monthStr = Integer.parseInt(split[1]);
+
+                    if(dayStr == (day - 1) && monthStr == month)
+                    {
+                        //add the match to the specific result set
+                        yesterdayMatches.add(yesterdayMatches.listIterator().nextIndex(),testArray.getJSONObject(i));
+                    }
+                    else if((dayStr == (day + 1) && monthStr == month) || ((dayStr == 31 || dayStr == 30) && (day == 1) && ( monthStr == month - 1)))
+                    {
+                        //add the match to the specific result set
+                        tomorrowMatches.add(tomorrowMatches.listIterator().nextIndex(),testArray.getJSONObject(i));
+                    }
+                    else if(dayStr != day && (dayStr < day - 1))
+                    {
+                        earlierMatches.add(earlierMatches.listIterator().nextIndex(),testArray.getJSONObject(i));
+                    }
+                    else if(dayStr != day && (dayStr > day + 1))
+                    {
+                        laterMatches.add(laterMatches.listIterator().nextIndex(),testArray.getJSONObject(i));
+                    }
+                }
+            }
+
+            //update the match json object list
+            match = todayMatches;
+
+            //create cards for the competitions and matches
+            createCards();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     /*
     *
     *  Handle the list counties
     *
      */
-    private void createAndHandleList(ArrayList<JSONObject> match_list)
+    private void createRecyclerView()
     {
         //logic here
         try
         {
             //update the match json object list
-            match = match_list;
+            match = todayMatches;
+
+            //create cards for the competitions and matches
+            createCards();
 
             // preparing list counties
-            prepareListData();
+            //prepareListData();
 
             // get the listview
             expListView = (ExpandableListView) findViewById(R.id.lvExp);
@@ -394,6 +476,43 @@ public class Fixtures extends AppCompatActivity
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    private void createCards()
+    {
+        LinearLayout parent = new LinearLayout(Fixtures.this);
+
+        parent.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        parent.setOrientation(LinearLayout.HORIZONTAL);
+
+        for(int i=0; i < 4; i++)
+        {
+            // Initialize a new CardView
+            CustomViews crd = new CustomViews();
+
+            crd.customCardView(Fixtures.this);
+
+            CardView vm = crd.getCard();
+
+            // Set the CardView layoutParams
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    RecyclerView.LayoutParams.MATCH_PARENT,
+                    RecyclerView.LayoutParams.WRAP_CONTENT
+            );
+
+            for(int j=0; j < 4; j++)
+            {
+                // Initialize a new TextView to put in CardView
+                TextView tv = new TextView(Fixtures.this);
+                tv.setLayoutParams(params);
+                tv.setText("CardView\nProgrammatically");
+                tv.setTextColor(Color.RED);
+
+                vm.addView(tv);
+            }
+
+            cardView.addView(vm);
         }
     }
 
@@ -581,7 +700,7 @@ public class Fixtures extends AppCompatActivity
         //create an SQL cursor for the functionality of getting all the contacts
         ArrayList<JSONObject> matches = db.getAllContacts(county);
 
-        //for each competition in matches
+        //for each competition in todayMatches
         for(int i = 0; i<matches.size();i++)
         {
 

@@ -17,6 +17,5 @@ public class Information extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.information_activity);
 
-
     }
 }
