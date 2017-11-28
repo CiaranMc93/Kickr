@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import cmcmanus.kickr.Custom_Views.CustomViews;
 import cmcmanus.kickr.Data_Storage.DBAdapter;
@@ -87,12 +88,14 @@ public class Fixtures extends AppCompatActivity
     List<JSONObject> underageFootballJSON = null;
     List<JSONObject> underageHurlingJSON = null;
 
-    JSONArray testArray = new JSONArray("[{\"time\":\"7 01 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}," +
-            " {\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}," +
-            " {\"time\":\"7 02 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}," +
-            " {\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}," +
-            " {\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}," +
-            " {\"time\":\"7 30 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"08-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}]");
+    JSONArray testArray = new JSONArray("[{\"time\":\"7 01 PM\",\"homeTeam\":\"Courtwood\",\"awayTeam\":\"Emo\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}," +
+            " {\"time\":\"7 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Ballylinan\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}," +
+            " {\"time\":\"7 02 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}," +
+            " {\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}," +
+            " {\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}," +
+            " {\"time\":\"7 35 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875248}," +
+            "{\"time\":\"7 32 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Football League Division 2\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875249}," +
+            "{\"time\":\"7 36 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Portlaoise\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Football League Division 2\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875210}]");
 
     //JSONObject testJson = new JSONObject("{\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Hurling League Division 1\",\"date\":\"29-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}");
     //JSONObject testJson2 = new JSONObject("{\"time\":\"6 00 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"01-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}");
@@ -124,6 +127,14 @@ public class Fixtures extends AppCompatActivity
         today  = (Button)findViewById(R.id.today);
         tomorrow = (Button)findViewById(R.id.tomorrow);
         dateSearch = (Button)findViewById(R.id.date);
+
+        today.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+                // TODO Auto-generated method stub
+            }
+        });
 
         yesterday.setOnClickListener(new View.OnClickListener()
         {
@@ -188,6 +199,37 @@ public class Fixtures extends AppCompatActivity
     private void initMenu()
     {
         today.setTextColor(getResources().getColor(R.color.white));
+        //init the buttons
+        yesterday = (Button)findViewById(R.id.yesterday);
+        today  = (Button)findViewById(R.id.today);
+        tomorrow = (Button)findViewById(R.id.tomorrow);
+        dateSearch = (Button)findViewById(R.id.date);
+
+        today.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        yesterday.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                yesterday.setTextColor(getResources().getColor(R.color.white));
+            }
+        });
+
+        tomorrow.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                tomorrow.setTextColor(getResources().getColor(R.color.white));
+            }
+        });
+
     }
 
     /**
@@ -335,13 +377,24 @@ public class Fixtures extends AppCompatActivity
         sortMatches.setMatchesByComp();
 
         //sort the selected days matches by competition
-        JSONArray matches = sortMatches.getMatchesByComp();
+        int allCompsSize = sortMatches.getTotalNumComps();
 
-        for(int i=0; i < matches.length(); i++)
+        HashMap<Integer,Sorting_Match_Info.MatchMap> displayMatches = sortMatches.getAllCompsMap();
+
+        Set keys = displayMatches.keySet();
+
+        for(int i=0; i < allCompsSize; i++)
         {
+            //get the list of matches based
+            Sorting_Match_Info.MatchMap matchList = displayMatches.get(i);
+
+            JSONArray matches = matchList.getMatches();
+            String compTitle = matchList.getTitle();
+
+            //for each object in the json array
             // Initialize a new custom CardView
             customCard = new CustomViews(Fixtures.this);
-            customCard.setCustomCardView();
+            customCard.setCustomCardView(matches,compTitle);
 
             //create a new card view with our custom card
             cardView = customCard.getCard();

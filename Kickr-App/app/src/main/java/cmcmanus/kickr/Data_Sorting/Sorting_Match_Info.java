@@ -4,11 +4,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import cmcmanus.kickr.R;
@@ -23,6 +25,9 @@ public class Sorting_Match_Info
     private Calendar cal = null;
     private String formatDateTime = "";
 
+    //maps
+    HashMap<Integer,MatchMap> allCompsMap = null;
+
     //returned data
     private JSONArray todayMatches = null;
     private JSONArray yesterdayMatches = null;
@@ -31,6 +36,8 @@ public class Sorting_Match_Info
     private JSONArray laterMatches = null;
     private JSONArray match_competitions = null;
     private JSONArray seniorFootball = null;
+    private JSONArray seniorHurling = null;
+    private ArrayList<JSONArray> allComps = null;
 
     //constructed data
     private JSONArray sortTodayMatches = null;
@@ -40,6 +47,7 @@ public class Sorting_Match_Info
     private JSONArray sortLaterMatches = null;
     private JSONArray sort_match_competitions = null;
     private JSONArray sortedSeniorFootball = null;
+    private JSONArray sortedSeniorHurling = null;
 
     //result data
     private JSONArray resultData = null;
@@ -179,14 +187,20 @@ public class Sorting_Match_Info
         }
     }
 
-    public JSONArray getEarlierMatches() { return earlierMatches; };
-    public JSONArray getLaterMatches() { return laterMatches; };
+    public JSONArray getEarlierMatches() { return earlierMatches; }
+    public JSONArray getLaterMatches() { return laterMatches; }
 
-    public JSONArray getMatchesByComp() { return seniorFootball; };
+    public HashMap<Integer,MatchMap> getAllCompsMap() { return allCompsMap; }
+
+    public int getTotalNumComps()
+    {
+        return allComps.size();
+    }
 
     public void setMatchesByComp()
     {
         sortedSeniorFootball = new JSONArray();
+        sortedSeniorHurling = new JSONArray();
 
         //sort the todayMatches into different arrays based on date and time
         try
@@ -200,11 +214,11 @@ public class Sorting_Match_Info
                 {
                     sortedSeniorFootball.put(resultData.getJSONObject(i));
                 }
-                /*
+
                 else if (competition.contains("senior") && competition.contains("hurling")) {
-                    seniorHurling.add(homeTeam + " vs. " + awayTeam);
-                    seniorHurlingJSON.add(match.get(i));
+                    sortedSeniorHurling.put(resultData.getJSONObject(i));
                 }
+                /*
                 else if ((competition.contains("junior") || competition.contains("intermediate")) && competition.contains("football")) {
                     intermediate_junior_football_fixtures.add(homeTeam + " vs. " + awayTeam);
                     intermediate_junior_football_fixturesJSON.add(match.get(i));
@@ -266,12 +280,51 @@ public class Sorting_Match_Info
             }
 
             this.seniorFootball = sortByTime(sortedSeniorFootball);
+            this.seniorHurling = sortByTime(sortedSeniorHurling);
+
+            //add all competitions created into a list
+            addAllCompsToday();
 
         }//end for
         catch (JSONException e1)
         {
             e1.printStackTrace();
         }
+    }
+
+    private void addAllCompsToday()
+    {
+        allComps = new ArrayList<JSONArray>();
+        allCompsMap = new HashMap<Integer, MatchMap>();
+
+        if(null != this.seniorFootball || this.seniorFootball.length() != 0) {
+            //add json array into a map with identifier and add to arraylist
+            allCompsMap.put(0, new MatchMap("Senior Football",this.seniorFootball));
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorFootball);
+        }
+
+        if(null != this.seniorHurling || this.seniorHurling.length() != 0) {
+            allCompsMap.put(1, new MatchMap("Senior Hurling",this.seniorHurling));
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorHurling);
+        }
+
+        /* Develop for all other competitions
+        if(null != this.seniorFootball || this.seniorFootball.length() != 0) {
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorFootball);
+        }
+
+        if(null != this.seniorFootball || this.seniorFootball.length() != 0) {
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorFootball);
+        }
+
+        if(null != this.seniorFootball || this.seniorFootball.length() != 0) {
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorFootball);
+        }
+
+        if(null != this.seniorFootball || this.seniorFootball.length() != 0) {
+            allComps.add(allComps.listIterator().nextIndex(), this.seniorFootball);
+        }*/
+
     }
 
     public JSONArray sortByTime(JSONArray dataToSort)
@@ -393,4 +446,19 @@ public class Sorting_Match_Info
         }
     }
     */
+
+    public class MatchMap
+    {
+        private String title;
+        private JSONArray matches;
+
+        public MatchMap(String title, JSONArray matches)
+        {
+            this.title = title;
+            this.matches = matches;
+        }
+
+        public String getTitle(){ return title;}
+        public JSONArray getMatches(){ return matches; }
+    }
 }

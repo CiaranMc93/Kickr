@@ -1,4 +1,4 @@
-package cmcmanus.kickr;
+package cmcmanus.kickr.Custom_Objects;
 
 import org.json.JSONException;
 import org.json.JSONObject;
