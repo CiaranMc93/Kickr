@@ -461,4 +461,11 @@ public class Sorting_Match_Info
         public String getTitle(){ return title;}
         public JSONArray getMatches(){ return matches; }
     }
+
+    public void resetData()
+    {
+        this.yesterdayMatches = null;
+        this.todayMatches = null;
+        this.tomorrowMatches = null;
+    }
 }
