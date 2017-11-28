@@ -4,11 +4,14 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import cmcmanus.kickr.Fixtures;
+import cmcmanus.kickr.R;
 
 /**
  * Created by cmcmanus on 11/26/2017.
@@ -36,7 +39,11 @@ public class CustomViews
 
     public void setActionBar()
     {
+        LayoutInflater inflater = LayoutInflater.from(context);
 
+        RelativeLayout layoutActionBar = (RelativeLayout) inflater.inflate(R.layout.action_bar_const, null);
+
+        this.actionBar = layoutActionBar;
     }
 
     public CardView getCard() { return view; };
@@ -62,7 +69,7 @@ public class CustomViews
         cardView.setContentPadding(15, 15, 15, 15);
 
         // Set a background color for CardView
-        cardView.setCardBackgroundColor(Color.parseColor("#FFC6D6C3"));
+        cardView.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
 
         // Set the CardView maximum elevation
         cardView.setMaxCardElevation(31);
@@ -72,7 +79,7 @@ public class CustomViews
 
         cardLayout = new LinearLayout(context);
 
-        cardLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        cardLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         cardLayout.setOrientation(LinearLayout.VERTICAL);
 
         for(int j=0; j < 4; j++)
@@ -87,6 +94,9 @@ public class CustomViews
             cardLayout.addView(tv);
         }
 
+        //set the action bar to be displayed in the card
+        setActionBar();
+        cardView.addView(getActionBar());
         //add linear layout to cardview
         cardView.addView(cardLayout);
 
