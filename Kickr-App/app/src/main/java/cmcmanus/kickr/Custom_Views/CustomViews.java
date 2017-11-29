@@ -6,6 +6,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.widget.Button;
+import android.widget.CalendarView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ public class CustomViews
     CardView cardView = null;
     RelativeLayout actionBar = null;
     RelativeLayout match_card_layout = null;
+    CalendarView calendar = null;
 
 
     public CustomViews(Context context)
@@ -49,6 +51,17 @@ public class CustomViews
 
         this.actionBar = layoutActionBar;
     }
+
+    public void setCalendarView()
+    {
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        CalendarView calendarView = (CalendarView) inflater.inflate(R.layout.calendar_layout, null);
+
+        this.calendar = calendarView;
+    }
+
+    public CalendarView getCalendarView() { return calendar; }
 
     public void setMatchCardLayout()
     {

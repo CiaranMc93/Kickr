@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,8 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-
-import cmcmanus.kickr.R;
 
 /**
  * Created by cmcmanus on 11/27/2017.
@@ -32,9 +29,7 @@ public class Sorting_Match_Info
     private JSONArray todayMatches = null;
     private JSONArray yesterdayMatches = null;
     private JSONArray tomorrowMatches = null;
-    private JSONArray earlierMatches = null;
-    private JSONArray laterMatches = null;
-    private JSONArray match_competitions = null;
+    private JSONArray specificDateMatch = null;
     private JSONArray seniorFootball = null;
     private JSONArray seniorHurling = null;
     private ArrayList<JSONArray> allComps = null;
@@ -43,9 +38,7 @@ public class Sorting_Match_Info
     private JSONArray sortTodayMatches = null;
     private JSONArray sortYesterdayMatches = null;
     private JSONArray sortTomorrowMatches = null;
-    private JSONArray sortEarlierMatches = null;
-    private JSONArray sortLaterMatches = null;
-    private JSONArray sort_match_competitions = null;
+    private JSONArray sortSpecificMatchDate = null;
     private JSONArray sortedSeniorFootball = null;
     private JSONArray sortedSeniorHurling = null;
 
@@ -62,6 +55,14 @@ public class Sorting_Match_Info
         SimpleDateFormat format1 = new SimpleDateFormat("dd-MM-yyyy");
 
         this.formatDateTime = format1.format(cal.getTime());
+    }
+
+    public JSONArray getSpecificDateMatches(){ return specificDateMatch;}
+
+    public void setSpecificDateMatches(JSONArray dateMatches)
+    {
+        this.specificDateMatch = dateMatches;
+        this.resultData = dateMatches;
     }
 
     public JSONArray getTodaysMatches() { return todayMatches; };
@@ -186,9 +187,6 @@ public class Sorting_Match_Info
             e.printStackTrace();
         }
     }
-
-    public JSONArray getEarlierMatches() { return earlierMatches; }
-    public JSONArray getLaterMatches() { return laterMatches; }
 
     public HashMap<Integer,MatchMap> getAllCompsMap() { return allCompsMap; }
 
@@ -385,7 +383,7 @@ public class Sorting_Match_Info
         sortYesterdayMatches = new ArrayList<JSONObject>();
         sortTomorrowMatches = new ArrayList<JSONObject>();
         sortEarlierMatches = new ArrayList<JSONObject>();
-        sortLaterMatches = new ArrayList<JSONObject>();
+        sortSpecificMatchDate = new ArrayList<JSONObject>();
 
         //format the date to match our information
         SimpleDateFormat format1 = new SimpleDateFormat("dd-MM-yyyy");
@@ -429,7 +427,7 @@ public class Sorting_Match_Info
                     } else if (dayStr != day && (dayStr < day - 1)) {
                         sortEarlierMatches.add(sortEarlierMatches.listIterator().nextIndex(), resultData.getJSONObject(i));
                     } else if (dayStr != day && (dayStr > day + 1)) {
-                        sortLaterMatches.add(sortLaterMatches.listIterator().nextIndex(), resultData.getJSONObject(i));
+                        sortSpecificMatchDate.add(sortSpecificMatchDate.listIterator().nextIndex(), resultData.getJSONObject(i));
                     }
                 }
             }
@@ -438,7 +436,7 @@ public class Sorting_Match_Info
             this.yesterdayMatches = sortYesterdayMatches;
             this.tomorrowMatches = sortTomorrowMatches;
             this.earlierMatches = sortEarlierMatches;
-            this.laterMatches = sortLaterMatches;
+            this.specificDateMatch = sortSpecificMatchDate;
         }
         catch (Exception e)
         {

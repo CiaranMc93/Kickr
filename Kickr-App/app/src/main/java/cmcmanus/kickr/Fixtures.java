@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -15,6 +16,7 @@ import android.widget.CalendarView;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,19 +30,23 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import cmcmanus.kickr.Async_Tasks.AsyncResponse;
+import cmcmanus.kickr.Async_Tasks.FixtureRetrieval;
 import cmcmanus.kickr.Custom_Views.CustomViews;
 import cmcmanus.kickr.Data_Storage.DBAdapter;
 import cmcmanus.kickr.Data_Sorting.Sorting_Match_Info;
 import cmcmanus.kickr.Information.Information;
 
-public class Fixtures extends AppCompatActivity
+public class Fixtures extends AppCompatActivity implements AsyncResponse
 {
+
     //progress view variable
     public View mProgressView;
     public View backgroundView;
@@ -53,6 +59,9 @@ public class Fixtures extends AppCompatActivity
 
     //network variable
     FixtureRetrieval retrieveData = null;
+
+    //class variable
+    Fixtures fixtureVar;
 
     //display the cards in a relative layout
     RelativeLayout const_action_bar = null;
@@ -112,6 +121,16 @@ public class Fixtures extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fixtures);
 
+        //instantiate class
+        try
+        {
+            fixtureVar = new Fixtures();
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
         //instantiate the views
         mProgressView = findViewById(R.id.info_progress);
         backgroundView = findViewById(R.id.lvExp);
@@ -159,13 +178,26 @@ public class Fixtures extends AppCompatActivity
 
     private void updateDatabase()
     {
+
         //retrieve the counties from the server
         storeDataFlag = false;
         retrieveData = new FixtureRetrieval(county);
         retrieveData.execute();
+        retrieveData.delegate = this;
     }
 
-    private void initMenu()
+    //this override the implemented method from asyncTask
+    @Override
+    public void processFinish(String output)
+    {
+        //result = output
+        //jsonDataResult = output;
+
+        showProgress(false);
+        initMenu();
+    }
+
+    public void initMenu()
     {
         //initialize the data
         sortMatches = new Sorting_Match_Info(testArray);
@@ -177,6 +209,34 @@ public class Fixtures extends AppCompatActivity
         today  = (Button)findViewById(R.id.today);
         tomorrow = (Button)findViewById(R.id.tomorrow);
         dateSearch = (Button)findViewById(R.id.date);
+
+        dateSearch.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+                //inflate the calendar
+                CustomViews calendarView = new CustomViews(Fixtures.this);
+
+                calendarView.setCalendarView();
+                calendar = calendarView.getCalendarView();
+
+                //remove all views and display the calendar
+                ovrCardLayout.removeAllViews();
+                ovrCardLayout.addView(calendar);
+
+                cal = Calendar.getInstance();
+                calendar.setDate(cal.getTimeInMillis(), true, true);
+
+                calendar.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
+                {
+                    @Override
+                    public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth)
+                    {
+
+                    }
+                });
+            }
+        });
 
         //set the default
         today.setTextColor(getResources().getColor(R.color.white));
@@ -199,6 +259,7 @@ public class Fixtures extends AppCompatActivity
             }
         });
 
+        //we need to search for the results from the API in order to show this data
         yesterday.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v) {
@@ -238,7 +299,7 @@ public class Fixtures extends AppCompatActivity
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
+    public void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
@@ -269,104 +330,6 @@ public class Fixtures extends AppCompatActivity
             backgroundView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-
-    /**
-     * Represents an asynchronous task to retrieve the users choice of informationn
-     */
-    public class FixtureRetrieval extends AsyncTask<Void, Void, String>
-    {
-        public FixtureRetrieval(String county)
-        {
-            countyName = county.toLowerCase();
-        }
-
-        @Override
-        protected String doInBackground(Void... params)
-        {
-            URL url = null;
-            HttpURLConnection urlConnection = null;
-            StringBuilder sb = null;
-
-            try
-            {
-                url = new URL("https://kickr-api.herokuapp.com/fixtures/" + countyName);
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                BufferedReader br = null;
-                sb = new StringBuilder();
-
-                String line;
-
-                try {
-
-                    br = new BufferedReader(new InputStreamReader(in));
-
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
-                    }
-
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                finally
-                {
-                    if (br != null)
-                    {
-                        try
-                        {
-                            br.close();
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }//end if
-                }//end finally
-            }//end try
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            //set the response to the result string
-            return sb.toString();
-        }
-
-
-        @Override
-        protected void onPostExecute(final String success)
-        {
-            showProgress(false);
-
-            jsonDataResult = success;
-
-            if (jsonDataResult.equals(""))
-            {
-
-            }
-            else
-            {
-                //initialise the buttons for the menu bar
-                initMenu();
-            }
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-            showProgress(false);
-        }
-    }
-
-
 
     private void createCards()
     {
