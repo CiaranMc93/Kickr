@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CalendarView;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -56,6 +57,8 @@ public class Fixtures extends AppCompatActivity
     //display the cards in a relative layout
     RelativeLayout const_action_bar = null;
     LinearLayout ovrCardLayout = null;
+    CustomViews customCard = null;
+    CalendarView calendar = null;
 
     //button variable
     Button info;
@@ -99,12 +102,6 @@ public class Fixtures extends AppCompatActivity
             " {\"time\":\"8 01 PM\",\"homeTeam\":\"Arles-Kileen\",\"awayTeam\":\"Arles-Kilcruise\",\"venue\":\"McCann Park\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875211}," +
             " {\"time\":\"8 30 PM\",\"homeTeam\":\"Courtwood\",\"awayTeam\":\"Arles-Kileen\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"28-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875212}," +
             " {\"time\":\"7 30 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Arles-Kileen\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Football League Division 2\",\"date\":\"27-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875213}]");
-
-    //JSONObject testJson = new JSONObject("{\"time\":\"7 00 PM\",\"homeTeam\":\"IT Carlow\",\"awayTeam\":\"DCU Dóchas Éireann\",\"venue\":\"Hawkfield\",\"competition\":\"GAA Senior Hurling League Division 1\",\"date\":\"29-11-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875243}");
-    //JSONObject testJson2 = new JSONObject("{\"time\":\"6 00 PM\",\"homeTeam\":\"O'Dempseys\",\"awayTeam\":\"Portlaoise\",\"venue\":\"The Old Pound\",\"competition\":\"GAA Senior Football League Division 1\",\"date\":\"01-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875244}");
-    //JSONObject testJson3 = new JSONObject("{\"time\":\"8 00 PM\",\"homeTeam\":\"Portarlington\",\"awayTeam\":\"Emo\",\"venue\":\"McCann Park\",\"competition\":\"Senior Hurling League Finals\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875245}");
-    //JSONObject testJson4 = new JSONObject("{\"time\":\"8 30 PM\",\"homeTeam\":\"Ballylinan\",\"awayTeam\":\"O'Dempseys\",\"venue\":\"Athy\",\"competition\":\"Senior Football Division 1\",\"date\":\"05-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875246}");
-    //JSONObject testJson5 = new JSONObject("{\"time\":\"7 30 PM\",\"homeTeam\":\"Emo\",\"awayTeam\":\"Courtwood\",\"venue\":\"Emo\",\"competition\":\"GAA Senior Hurling League Division 2\",\"date\":\"08-12-2017\",\"homeTeamScore\":\"\",\"awayTeamScore\":\"\",\"winner\":\"\",\"id\":1137875247}");
 
     public Fixtures() throws JSONException {
     }
@@ -196,6 +193,7 @@ public class Fixtures extends AppCompatActivity
                 //instantiate the sorting class
                 sortMatches = new Sorting_Match_Info(testArray);
                 sortMatches.resetData();
+                ovrCardLayout.removeAllViews();
                 sortMatches.setTodaysMatches();
                 createCards();
             }
@@ -212,6 +210,7 @@ public class Fixtures extends AppCompatActivity
                 //instantiate the sorting class
                 sortMatches = new Sorting_Match_Info(testArray);
                 sortMatches.resetData();
+                ovrCardLayout.removeAllViews();
                 sortMatches.setYesterdayMatches();
                 createCards();
             }
@@ -228,6 +227,7 @@ public class Fixtures extends AppCompatActivity
                 //instantiate the sorting class
                 sortMatches = new Sorting_Match_Info(testArray);
                 sortMatches.resetData();
+                ovrCardLayout.removeAllViews();
                 sortMatches.setTomorrowsMatches();
                 createCards();
             }
@@ -371,7 +371,6 @@ public class Fixtures extends AppCompatActivity
     private void createCards()
     {
         LinearLayout cardLayout = null;
-        CustomViews customCard = null;
         CardView cardView = null;
 
         sortMatches.setMatchesByComp();

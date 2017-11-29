@@ -174,4 +174,9 @@ public class CustomViews
 
         this.view = cardView;
     }
+
+    public void removeViews()
+    {
+        cardView.removeAllViews();
+    }
 }
