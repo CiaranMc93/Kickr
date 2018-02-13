@@ -1,9 +1,6 @@
 package cmcmanus.kickr.Async_Tasks;
 
 import android.os.AsyncTask;
-
-import org.json.JSONArray;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +19,7 @@ import cmcmanus.kickr.Fixtures;
 public class FixtureRetrieval extends AsyncTask<Void, Void, String>
 {
     private String countyName = "";
+    private Boolean fixtures;
 
     public AsyncResponse delegate = null;
 
@@ -29,9 +27,10 @@ public class FixtureRetrieval extends AsyncTask<Void, Void, String>
         this.delegate = delegate;
     }
 
-    public FixtureRetrieval(String county)
+    public FixtureRetrieval(String county,Boolean fixtures)
     {
-        countyName = county.toLowerCase();
+        this.countyName = county.toLowerCase();
+        this.fixtures = fixtures;
     }
 
     @Override
@@ -43,7 +42,20 @@ public class FixtureRetrieval extends AsyncTask<Void, Void, String>
 
         try
         {
-            url = new URL("https://kickr-api.herokuapp.com/fixtures/" + countyName);
+            //reset string to usable variable
+            if(countyName.equals("inter-county"))
+            {
+                countyName = "county";
+            }
+
+            if(fixtures)
+            {
+                url = new URL("https://kickr-api.herokuapp.com/fixtures/" + countyName);
+            }
+            else
+            {
+                url = new URL("https://kickr-api.herokuapp.com/results/" + countyName);
+            }
 
             urlConnection = (HttpURLConnection) url.openConnection();
 

@@ -38,7 +38,7 @@ public class CountiesSelection extends AppCompatActivity {
     List<String> connacht = new ArrayList<String>();
     List<String> inter_county = new ArrayList<String>();
 
-    String[] provinces = { "Leinster", "Munster", "Connacht (Coming Soon!)", "Ulster (Coming Soon!)","Inter County (Coming Soon!)"};
+    String[] provinces = { "Leinster", "Munster", "Connacht (Coming Soon!)", "Ulster (Coming Soon!)","Inter County"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,7 +102,10 @@ public class CountiesSelection extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"Coming Soon!",Toast.LENGTH_SHORT).show();
                             break;
                         case 4:
-                            Toast.makeText(getApplicationContext(),"Coming Soon!",Toast.LENGTH_SHORT).show();
+                            //send the selected county to the fixture retrieval class
+                            i = new Intent(CountiesSelection.this,Fixtures.class);
+                            i.putExtra("county","inter-county");
+                            startActivity(i);
                             break;
                         default: break;
                     }
@@ -130,7 +133,7 @@ public class CountiesSelection extends AppCompatActivity {
 
         ulster.add(0,"");
         connacht.add(0,"");
-        inter_county.add(0,"");
+        inter_county.add(0,"Inter-County Football");
 
         //all all of the headers.
         listDataHeader.add(provinces[0]);

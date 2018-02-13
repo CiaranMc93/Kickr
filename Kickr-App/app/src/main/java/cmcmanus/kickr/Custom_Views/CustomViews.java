@@ -5,16 +5,15 @@ import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 
-import cmcmanus.kickr.Fixtures;
+import java.util.List;
+import cmcmanus.kickr.Custom_Objects.MatchObj;
 import cmcmanus.kickr.R;
 
 /**
@@ -31,9 +30,10 @@ public class CustomViews
 
     //constructed views
     CardView cardView = null;
-    RelativeLayout actionBar = null;
-    RelativeLayout match_card_layout = null;
+    RelativeLayout comp_title_layout = null;
+    RelativeLayout match_info_layout = null;
     CalendarView calendar = null;
+    LinearLayout calendarCustom = null;
 
 
     public CustomViews(Context context)
@@ -41,7 +41,7 @@ public class CustomViews
         this.context = context;
     }
 
-    public RelativeLayout getActionBar() { return actionBar; };
+    public RelativeLayout getCompTitleLayout() { return comp_title_layout; };
 
     public void setActionBar()
     {
@@ -49,10 +49,10 @@ public class CustomViews
 
         RelativeLayout layoutActionBar = (RelativeLayout) inflater.inflate(R.layout.card_title_bar, null);
 
-        this.actionBar = layoutActionBar;
+        this.comp_title_layout = layoutActionBar;
     }
 
-    public void setCalendarView()
+    public void setMonthButton()
     {
         LayoutInflater inflater = LayoutInflater.from(context);
 
@@ -61,20 +61,31 @@ public class CustomViews
         this.calendar = calendarView;
     }
 
+    public void setCustomerCalendar()
+    {
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        LinearLayout calendarView = (LinearLayout) inflater.inflate(R.layout.customer_cal, null);
+
+        this.calendarCustom = calendarView;
+    }
+
+    public LinearLayout getCustomCal() { return calendarCustom; }
+
     public CalendarView getCalendarView() { return calendar; }
 
-    public void setMatchCardLayout()
+    public void setMatchInfoLayout()
     {
         LayoutInflater inflater = LayoutInflater.from(context);
 
         RelativeLayout layoutActionBar = (RelativeLayout) inflater.inflate(R.layout.match_card_layout, null);
 
-        this.match_card_layout = layoutActionBar;
+        this.match_info_layout = layoutActionBar;
     }
 
     public CardView getCard() { return view; };
 
-    public void setCustomCardView(JSONArray matches, String compTitle)
+    public void setMatchDataLayout(String league, List<MatchObj> matches)
     {
         cardView = new CardView(context);
 
@@ -101,7 +112,7 @@ public class CustomViews
         cardView.setContentPadding(15, 15, 15, 15);
 
         // Set a background color for CardView
-        cardView.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+        cardView.setCardBackgroundColor(Color.parseColor("#d0d0d0"));
 
         // Set the CardView maximum elevation
         cardView.setMaxCardElevation(31);
@@ -114,82 +125,81 @@ public class CustomViews
         cardLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         cardLayout.setOrientation(LinearLayout.VERTICAL);
 
-        //set the action bar to be displayed in the card
-        setActionBar();
-
-        //set the comp title to be what has been passed in
-        TextView title = (TextView)this.actionBar.findViewById(R.id.compTitle);
-        title.setText(compTitle);
-
-        cardLayout.addView(this.actionBar);
-
-        //display the matches inside the card layout
-        for(int j=0; j < matches.length(); j++)
+        if(!(null == matches))
         {
-            //match variables
-            TextView score1;
-            TextView score2;
+            //set the action bar to be displayed in the card
+            setActionBar();
 
-            setMatchCardLayout();
+            //set the comp title to be what has been passed in
+            TextView title = (TextView)this.comp_title_layout.findViewById(R.id.compTitle);
+            title.setText(league);
 
-            try
+            cardLayout.addView(this.comp_title_layout);
+
+            //display the matches inside the card layout
+            for(int j=0; j < matches.size(); j++)
             {
+                //match variables
+                TextView score1;
+                TextView score2;
+
+                setMatchInfoLayout();
+
                 //display the match data
-                TextView time = (TextView)this.match_card_layout.findViewById(R.id.time);
-                time.setText(matches.getJSONObject(j).get("time").toString());
+                TextView time = (TextView)this.match_info_layout.findViewById(R.id.time);
+                time.setText(matches.get(j).getTime());
                 time.setTextSize(16);
 
-                if(!matches.getJSONObject(j).get("homeTeamScore").equals(""))
-                {
-                    score1 = (TextView)this.match_card_layout.findViewById(R.id.score);
-                    score1.setText(matches.getJSONObject(j).get("homeTeamScore").toString());
-                    score1.setTextSize(16);
-                }
-                else
-                {
-                    score1 = (TextView)this.match_card_layout.findViewById(R.id.score);
-                    score1.setText("0-00");
-                    score1.setTextSize(16);
-                }
+                score1 = (TextView)this.match_info_layout.findViewById(R.id.score);
+                score1.setText(matches.get(j).getHomeTeamScore());
+                score1.setTextSize(16);
 
-                if(!matches.getJSONObject(j).get("awayTeamScore").equals(""))
-                {
-                    score2 = (TextView)this.match_card_layout.findViewById(R.id.score2);
-                    score2.setText(matches.getJSONObject(j).get("awayTeamScore").toString());
-                    score2.setTextSize(16);
-                }
-                else
-                {
-                    score2 = (TextView)this.match_card_layout.findViewById(R.id.score2);
-                    score2.setText("0-00");
-                    score2.setTextSize(16);
-                }
+                score2 = (TextView)this.match_info_layout.findViewById(R.id.score2);
+                score2.setText(matches.get(j).getAwayTeamScore());
+                score2.setTextSize(16);
 
-                TextView home = (TextView)this.match_card_layout.findViewById(R.id.team1);
-                home.setText(matches.getJSONObject(j).get("homeTeam").toString());
+                TextView home = (TextView)this.match_info_layout.findViewById(R.id.team1);
+                home.setText(matches.get(j).getHomeTeam());
                 home.setTextSize(16);
 
-                TextView away = (TextView)this.match_card_layout.findViewById(R.id.team2);
-                away.setText(matches.getJSONObject(j).get("awayTeam").toString());
+                TextView away = (TextView)this.match_info_layout.findViewById(R.id.team2);
+                away.setText(matches.get(j).getAwayTeam());
                 away.setTextSize(16);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
+
+                //add text view to linear layout
+                cardLayout.addView(this.match_info_layout);
             }
 
-            //add text view to linear layout
-            cardLayout.addView(this.match_card_layout);
+            //add linear layout to cardview
+            cardView.addView(cardLayout);
+
+            this.view = cardView;
         }
+        else
+        {
+            //set the action bar to be displayed in the card
+            setActionBar();
 
-        //add linear layout to cardview
-        cardView.addView(cardLayout);
+            //set the comp title to be what has been passed in
+            TextView title = (TextView)this.comp_title_layout.findViewById(R.id.compTitle);
 
-        this.view = cardView;
+            title.setText("No Fixtures Available");
+
+            //set the width to match the parent
+            cardLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            cardLayout.addView(this.comp_title_layout);
+
+            //add linear layout to cardview
+            cardView.addView(cardLayout);
+
+            this.view = cardView;
+        }
     }
 
     public void removeViews()
     {
         cardView.removeAllViews();
     }
+
 }
