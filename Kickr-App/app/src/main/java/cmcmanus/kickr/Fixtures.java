@@ -3,14 +3,11 @@ package cmcmanus.kickr;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -45,11 +42,9 @@ import cmcmanus.kickr.Custom_Objects.MatchObj;
 import cmcmanus.kickr.Custom_Views.CustomViews;
 import cmcmanus.kickr.Data_Storage.DBAdapter;
 import cmcmanus.kickr.Data_Sorting.SortMatchInfo;
-import cmcmanus.kickr.Information.Information;
 
 public class Fixtures extends AppCompatActivity implements AsyncResponse
 {
-
     //progress view variable
     public View mProgressView;
     public View backgroundView;
@@ -68,7 +63,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
     //display the cards in a relative layout
     RelativeLayout const_action_bar = null;
-    LinearLayout all_match_info_display = null;
+    public static LinearLayout all_match_info_display = null;
     CustomViews competition_info_card = null;
     CalendarView calendar = null;
 
@@ -82,6 +77,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     private ArrayList<MatchObj> matchObjList = null;
     private DBAdapter db = null;
     private String county = "";
+    private String sortBy = "";
     private Boolean storeDataFlag = false;
     private int dbSize = 0;
 
@@ -99,9 +95,6 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     private JSONArray matches = null;
     private SortMatchInfo sortMatches = null;
 
-    public Fixtures() throws JSONException {
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -110,14 +103,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         setContentView(R.layout.activity_fixtures);
 
         //instantiate class
-        try
-        {
-            fixtureVar = new Fixtures();
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
+        fixtureVar = new Fixtures();
 
         tabLayout = (TabLayout) findViewById(R.id.tabLayout);
 
@@ -132,7 +118,16 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         backgroundView = findViewById(R.id.lvExp);
 
         Bundle bundle = getIntent().getExtras();
-        county = bundle.getString("county");
+
+        if(null == bundle.getString("sortby") || bundle.getString("sortby").equals(""))
+        {
+            county = bundle.getString("county");
+        }
+        else
+        {
+            sortBy = bundle.getString("sortby");
+            county = bundle.getString("county");
+        }
 
         const_action_bar = (RelativeLayout)findViewById(R.id.action_bar_const);
 
@@ -145,12 +140,6 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         //retrieve data from database
         //if we do not have data in the database, then we retrieve from the API.
         databaseHandler();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void initTabLayoutBar(final TabLayout tabLayout)
-    {
-
     }
 
     private void retrieveData(Boolean fixtures)
@@ -182,6 +171,8 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             {
                 matchList = createMatchObjArray(matches);
 
+                matchObjList = matchList;
+
                 if(!(matchList.size() == db.getMatchesCount(county)))
                 {
                     //insert into database
@@ -189,7 +180,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 }
 
                 //display the data
-                initMenu(matchList,tabLayout);
+                initMenu(matchList,tabLayout,sortBy);
             }
         }
         catch(JSONException e)
@@ -211,42 +202,58 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void databaseHandler()
     {
-        ArrayList<MatchObj> matchList = db.getAllMatches(county);
-
-        //if there is data existing, then we display that data first.
-        if(null != matchList && !(matchList.size() == 0))
+        if(null != sortBy && !(sortBy.equals("")))
         {
-            //check to make sure that we are on the current date
-            String currDate = db.getDate();
+            ArrayList<MatchObj> matchList = db.getAllMatches(county);
 
-            //if current date is not null and not empty
-            if(null != currDate && !(currDate.equals("")))
+            //if there is data existing, then we display that data first.
+            if(null != matchList && !(matchList.size() == 0))
             {
-                if(!currDate.contains(date_str))
-                {
-                    db.updateDate(date_str);
-                    //retrieve the data from the API once per day to update the fixtures
-                    //this is done in the background
-                    retrieveData(true);
-                }
-                else
-                {
-                    //display database data
-                    initMenu(matchList,tabLayout);
-                }
-            }
-            else
-            {
-                //initial insert
-                db.insertDate(date_str);
-                initMenu(matchList,tabLayout);
+                initMenu(matchList,tabLayout,sortBy);
             }
         }
         else
         {
-            //retrieve the data from the API initial
-            showProgress(true);
-            retrieveData(true);
+            ArrayList<MatchObj> matchList = db.getAllMatches(county);
+
+            //if there is data existing, then we display that data first.
+            if(null != matchList && !(matchList.size() == 0))
+            {
+                //set matchlist
+                matchObjList = matchList;
+
+                //check to make sure that we are on the current date
+                String currDate = db.getDate();
+
+                //if current date is not null and not empty
+                if(null != currDate && !(currDate.equals("")))
+                {
+                    if(!currDate.contains(date_str))
+                    {
+                        db.updateDate(date_str);
+                        //retrieve the data from the API once per day to update the fixtures
+                        //this is done in the background
+                        retrieveData(true);
+                    }
+                    else
+                    {
+                        //display database data
+                        initMenu(matchList,tabLayout,sortBy);
+                    }
+                }
+                else
+                {
+                    //initial insert
+                    db.insertDate(date_str);
+                    initMenu(matchList,tabLayout,sortBy);
+                }
+            }
+            else
+            {
+                //retrieve the data from the API initial
+                showProgress(true);
+                retrieveData(true);
+            }
         }
     }
 
@@ -316,9 +323,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void initMenu(final ArrayList<MatchObj> matchList, final TabLayout tabLayout)
+    public void initMenu(final ArrayList<MatchObj> matchList, final TabLayout tabLayout,final String sortBy)
     {
-        displayMatchInfo(matchList,date_str);
+        displayMatchInfo(matchList,date_str,sortBy);
 
         //init the buttons
         yesterday = (Button)findViewById(R.id.yesterday);
@@ -352,7 +359,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                     //instantiate the sorting class
                     sortMatches = new SortMatchInfo();
                     sortMatches.resetData();
-                    sortMatches.setMatchesByComp(matchList,date_str);
+                    sortMatches.setMatchesByComp(matchList,date_str,null);
                     displayCalendar(matchList,tabLayout);
                 }
             }
@@ -365,11 +372,23 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             @Override
             public void onTabReselected(TabLayout.Tab tab)
             {
-                //instantiate the sorting class
-                sortMatches = new SortMatchInfo();
-                sortMatches.resetData();
-                sortMatches.setMatchesByComp(matchList,date_str);
-                displayCalendar(matchList,tabLayout);
+                if(tabLayout.getSelectedTabPosition() == 0)
+                {
+                    //return to previous
+                    finish();
+                }
+                else if(tabLayout.getSelectedTabPosition() == 1)
+                {
+                    Toast.makeText(Fixtures.this,"Tab 2",Toast.LENGTH_SHORT).show();
+                }
+                else if(tabLayout.getSelectedTabPosition() == 2)
+                {
+                    //instantiate the sorting class
+                    sortMatches = new SortMatchInfo();
+                    sortMatches.resetData();
+                    sortMatches.setMatchesByComp(matchList,date_str,null);
+                    displayCalendar(matchList,tabLayout);
+                }
             }
         });
 
@@ -396,96 +415,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 sortMatches = new SortMatchInfo();
                 sortMatches.resetData();
                 all_match_info_display.removeAllViews();
-                displayMatchInfo(matchList,date_str);
-            }
-        });
-
-
-        //we need to search for the results from the API in order to show this data
-        yesterday.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                yesterday.setTextColor(getResources().getColor(R.color.white));
-                today.setTextColor(getResources().getColor(R.color.black));
-                tomorrow.setTextColor(getResources().getColor(R.color.black));
-
-                String date = date_str;  // Start date
-
-                try
-                {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-                    Calendar c = Calendar.getInstance();
-                    c.setTime(sdf.parse(date));
-                    c.add(Calendar.DATE, -1);  // number of days to add
-                    date = sdf.format(c.getTime());
-                }
-                catch (ParseException e)
-                {
-                    e.printStackTrace();
-                }
-
-                //retrieve the results from the API
-                //make sure that the current data retrieved from the API does not have this date
-                if(matchList.get(0).getDate().contains(date))
-                {
-                    showProgress(true);
-                    retrieveData(false);
-                }
-
-                //make sure the user can see the today button
-                if(!today.toString().equals("Today"))
-                {
-                    today.setText("Today");
-                }
-
-                //instantiate the sorting class
-                sortMatches = new SortMatchInfo();
-                sortMatches.resetData();
-                all_match_info_display.removeAllViews();
-
-                //display the data
-                displayMatchInfo(matchList,date);
-            }
-        });
-
-
-        tomorrow.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                tomorrow.setTextColor(getResources().getColor(R.color.white));
-                today.setTextColor(getResources().getColor(R.color.black));
-                yesterday.setTextColor(getResources().getColor(R.color.black));
-
-                String date = date_str;  // Start date
-
-                try
-                {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-                    Calendar c = Calendar.getInstance();
-                    c.setTime(sdf.parse(date));
-                    c.add(Calendar.DATE, 1);  // number of days to add
-                    date = sdf.format(c.getTime());
-                }
-                catch (ParseException e)
-                {
-                    e.printStackTrace();
-                }
-
-                //make sure the user can see the today button
-                if(!today.toString().equals("Today"))
-                {
-                    today.setText("Today");
-                }
-
-                //instanti1ate the sorting class
-                sortMatches = new SortMatchInfo();
-                sortMatches.resetData();
-                all_match_info_display.removeAllViews();
-
-                //display the match data
-                displayMatchInfo(matchList,date);
+                displayMatchInfo(matchList,date_str,null);
             }
         });
     }
@@ -576,7 +506,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 //set the text to be the date
                 today.setText(parseDate.toString());
                 //display the data
-                displayMatchInfo(matchList,parseDate.toString());
+                displayMatchInfo(matchList,parseDate.toString(),sortBy);
             }
 
             @Override
@@ -627,14 +557,23 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     }
 
 
-    private void displayMatchInfo(ArrayList<MatchObj> matchList, String date)
+    private void displayMatchInfo(ArrayList<MatchObj> matchList, String date,String sortBy)
     {
         sortMatches = new SortMatchInfo();
         LinearLayout cardLayout = null;
         CardView cardView = null;
 
         //set the different types of matches by competition
-        Map<String, List<MatchObj>> compList = sortMatches.setMatchesByComp(matchList,date);
+        Map<String, List<MatchObj>> compList;
+
+        if(null != sortBy && !(sortBy.equals("")))
+        {
+            compList = sortMatches.setMatchesByComp(matchList,date,sortBy);
+        }
+        else
+        {
+            compList = sortMatches.setMatchesByComp(matchList,date,null);
+        }
 
         //if there are no scheduled matches, we need to display this to user
         if(compList.size() == 0)
@@ -672,6 +611,16 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 //add cardview to linearLayout
                 all_match_info_display.addView(cardView);
             }
+        }
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(all_match_info_display.isDirty())
+        {
+            //display todays matches when back button is pressed
+            displayMatchInfo(matchObjList,date_str,sortBy);
         }
     }
 }

@@ -143,7 +143,7 @@ public class DBAdapter extends SQLiteOpenHelper
     {
         ArrayList<MatchObj> listObj = new ArrayList<MatchObj>();
 
-        String selectQuery = "SELECT * FROM " + MATCH_TABLE + " WHERE " + COUNTY + " = '" + county + "'";
+        String selectQuery = "SELECT * FROM " + MATCH_TABLE + " WHERE " + COUNTY + " = '" + county.toLowerCase() + "'";
 
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -167,6 +167,7 @@ public class DBAdapter extends SQLiteOpenHelper
                 mObj.setHomeTeamScore(c.getString(c.getColumnIndex(HOME_SCORE)));
                 mObj.setAwayTeamScore(c.getString(c.getColumnIndex(AWAY_SCORE)));
                 mObj.setWinner(c.getString(c.getColumnIndex(WINNER)));
+                mObj.setTime(c.getString(c.getColumnIndex(TIME)));
 
                 // adding to todo list
                 listObj.add(mObj);

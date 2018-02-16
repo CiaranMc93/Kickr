@@ -38,7 +38,7 @@ public class CountiesSelection extends AppCompatActivity {
     List<String> connacht = new ArrayList<String>();
     List<String> inter_county = new ArrayList<String>();
 
-    String[] provinces = { "Leinster", "Munster", "Connacht (Coming Soon!)", "Ulster (Coming Soon!)","Inter County"};
+    String[] provinces = { "Leinster", "Munster","Inter County"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,12 +96,6 @@ public class CountiesSelection extends AppCompatActivity {
                             startActivity(i);
                             break;
                         case 2:
-                            Toast.makeText(getApplicationContext(),"Coming Soon!",Toast.LENGTH_SHORT).show();
-                            break;
-                        case 3:
-                            Toast.makeText(getApplicationContext(),"Coming Soon!",Toast.LENGTH_SHORT).show();
-                            break;
-                        case 4:
                             //send the selected county to the fixture retrieval class
                             i = new Intent(CountiesSelection.this,Fixtures.class);
                             i.putExtra("county","inter-county");
@@ -139,14 +133,10 @@ public class CountiesSelection extends AppCompatActivity {
         listDataHeader.add(provinces[0]);
         listDataHeader.add(provinces[1]);
         listDataHeader.add(provinces[2]);
-        listDataHeader.add(provinces[3]);
-        listDataHeader.add(provinces[4]);
 
         listDataChild.put(listDataHeader.get(0), leinster);
         listDataChild.put(listDataHeader.get(1), munster);
-        listDataChild.put(listDataHeader.get(2), connacht);
-        listDataChild.put(listDataHeader.get(3), ulster);
-        listDataChild.put(listDataHeader.get(4), inter_county);
+        listDataChild.put(listDataHeader.get(2), inter_county);
     }
 
     //check if there is a connection to the internet or not

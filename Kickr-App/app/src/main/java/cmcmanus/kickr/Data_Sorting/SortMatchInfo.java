@@ -28,7 +28,7 @@ public class SortMatchInfo
     {
     }
 
-    public Map<String, List<MatchObj>> setMatchesByComp(ArrayList<MatchObj> matchList, String date)
+    public Map<String, List<MatchObj>> setMatchesByComp(ArrayList<MatchObj> matchList, String date,String sortByInput)
     {
         //instantiate the lists
         ArrayList<MatchObj> sortList = new ArrayList<MatchObj>();
@@ -63,41 +63,69 @@ public class SortMatchInfo
             {
                 Log.e("ERROR","Date Parse Exception: " + e);
             }
-            //check to make sure we are sorting matches for todays date
-            if(date.equals(matchList.get(j).getDate()))
+
+            if(null != sortByInput && !(sortByInput.equals("")))
             {
-                if(!matchTimes.contains(matchList.get(j).getTime()))
+                //determine the type of input passed in
+                String[] inputSplit = sortByInput.split("-");
+
+                String inputType = inputSplit[1];
+
+                if(inputSplit[0].contains("competition"))
                 {
-                    //put all the times of todays matches in a list
-                    matchTimes.add(matchTimes.listIterator().nextIndex(),matchList.get(j).getTime());
-                    matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                    //check to make sure we are sorting matches for the competition
+                    if(inputType.equals(matchList.get(j).getCompetition()))
+                    {
+                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                    }
                 }
-                else
+            }
+            else
+            {
+                //check to make sure we are sorting matches for todays date
+                if(date.equals(matchList.get(j).getDate()))
                 {
-                    matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                    if(!matchTimes.contains(matchList.get(j).getTime()))
+                    {
+                        //put all the times of todays matches in a list
+                        matchTimes.add(matchTimes.listIterator().nextIndex(),matchList.get(j).getTime());
+                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                    }
+                    else
+                    {
+                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                    }
                 }
             }
         }
 
-        //sort the list by time.
-        Collections.sort(matchTimes,Collections.<String>reverseOrder());
+        Map<String, List<MatchObj>> map = new HashMap<String, List<MatchObj>>();
 
-        //place the match objects into a sorted object list
-        for(int k=0; k < matchTimes.size(); k++)
+        //we cannot sort this if we have a sortByInput
+        if(null == sortByInput || sortByInput.equals(""))
         {
-            for(int l=0; l < matchObjToBeSorted.size(); l++)
+            //sort the list by time.
+            Collections.sort(matchTimes, Collections.<String>reverseOrder());
+
+            //place the match objects into a sorted object list
+            for(int k=0; k < matchTimes.size(); k++)
             {
-                if(matchTimes.get(k).equals(matchObjToBeSorted.get(l).getTime()))
+                for(int l=0; l < matchObjToBeSorted.size(); l++)
                 {
-                    sortList.add(sortList.listIterator().nextIndex(),matchObjToBeSorted.get(l));
+                    if(matchTimes.get(k).equals(matchObjToBeSorted.get(l).getTime()))
+                    {
+                        sortList.add(sortList.listIterator().nextIndex(),matchObjToBeSorted.get(l));
+                    }
                 }
             }
+        }
+        else
+        {
+            sortList = matchObjToBeSorted;
         }
 
         //sort by competition
         Collections.sort(sortList,new SortByComp());
-
-        Map<String, List<MatchObj>> map = new HashMap<String, List<MatchObj>>();
 
         for (MatchObj match : sortList)
         {
