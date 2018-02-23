@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/action_bar_const"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary" >
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:layout_alignParentLeft="true"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/info_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_below="@+id/action_bar_const"
+        style="@style/Base.V7.Widget.AppCompat.EditText"
+        android:text="@string/title" />
+
+    <EditText
+        android:id="@+id/info_contact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_below="@+id/info_title"
+        style="@style/Base.V7.Widget.AppCompat.EditText"
+        android:text="@string/contact" />
+
+    <EditText
+        android:id="@+id/info_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_below="@+id/info_contact"
+        style="@style/Base.V7.Widget.AppCompat.EditText"
+        android:text="@string/name" />
+
+    <EditText
+        android:id="@+id/info_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_below="@+id/info_name"
+        style="@style/Base.V7.Widget.AppCompat.EditText"
+        android:text="@string/information_text" />
+
+    <EditText
+        android:id="@+id/info_text_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_below="@+id/info_text"
+        style="@style/Base.V7.Widget.AppCompat.EditText"
+        android:text="@string/information_text_2" />
+
+
+</RelativeLayout>

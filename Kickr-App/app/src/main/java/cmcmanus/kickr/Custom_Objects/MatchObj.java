@@ -1,13 +1,10 @@
-package cmcmanus.kickr;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+package cmcmanus.kickr.Custom_Objects;
 
 /**
  * Created by cmcmanus on 8/25/2017.
  */
 
-public class MatchObj {
+public class MatchObj{
     //member variables
     private String time = "";
     private String homeTeam = "";
@@ -18,43 +15,12 @@ public class MatchObj {
     private String homeTeamScore = "";
     private String awayTeamScore = "";
     private String winner = "";
+    private String county = "";
     private int id = 0;
 
-    public void Matches(JSONObject obj)
+    public MatchObj()
     {
-        try
-        {
-            //create a hash of the following string
-            this.setId(((String) obj.get("Home") + "-" + (String) obj.get("Away") + "-" + (String) obj.get("Competition") + "-" + (String) obj.get("Date")).hashCode());
 
-            this.setHomeTeam((String) obj.get("Home"));
-            this.setAwayTeam((String) obj.get("Away"));
-            this.setCompetition((String) obj.get("Competition"));
-            this.setDate((String) obj.get("Date"));
-
-            if(obj.has("HomeScore"))
-            {
-                this.setHomeTeamScore((String)obj.get("HomeScore"));
-                this.setAwayTeamScore((String)obj.get("AwayScore"));
-                this.setWinner((String)obj.get("Winner"));
-
-                //check if time is in the object
-                if(obj.has("Time") && obj.has("Venue"))
-                {
-                    this.setTime((String) obj.get("Time"));
-                    this.setVenue((String) obj.get("Venue"));
-                }
-            }
-            else
-            {
-                this.setTime((String) obj.get("Time"));
-                this.setVenue((String) obj.get("Venue"));
-            }
-        }
-        catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     public String getTime() {
@@ -63,6 +29,14 @@ public class MatchObj {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getCounty() {
+        return county;
+    }
+
+    public void setCounty(String county) {
+        this.county = county;
     }
 
     public String getHomeTeam() {
@@ -137,4 +111,5 @@ public class MatchObj {
     {
         this.id = id;
     }
+
 }

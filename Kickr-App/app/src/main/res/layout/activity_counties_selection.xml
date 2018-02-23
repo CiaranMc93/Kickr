@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="cmcmanus.kickr.CountiesSelection">
+    tools:context="cmcmanus.kickr.CountiesSelection"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/action_bar_const"
@@ -17,6 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Home"
+            android:textColor="#fff"
             android:layout_alignParentLeft="true"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
@@ -24,24 +26,17 @@
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="#fff"
             android:text="Options"
             android:layout_alignParentRight="true"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
     </RelativeLayout>
 
-    <GridView
-        android:id="@+id/countyGrid"
-        android:layout_width="wrap_content"
+    <ExpandableListView
+        android:id="@+id/lvExp"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="8dp"
-        android:columnWidth="120dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        tools:layout_editor_absoluteY="8dp"
+        android:layout_width="match_parent"
         android:layout_below="@+id/action_bar_const"/>
 
 </LinearLayout>
