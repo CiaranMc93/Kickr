@@ -59,7 +59,6 @@ public class Information extends AppCompatActivity
                 Information.this.startActivity(match);
             }
         });
-
     }
 
     @Override

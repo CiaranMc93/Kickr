@@ -3,6 +3,7 @@ package cmcmanus.kickr;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import cmcmanus.kickr.Async_Tasks.AsyncResponse;
+import cmcmanus.kickr.Async_Tasks.DatabaseAsync;
 import cmcmanus.kickr.Async_Tasks.FixtureRetrieval;
 import cmcmanus.kickr.Custom_Objects.MatchObj;
 import cmcmanus.kickr.Custom_Views.CustomViews;
@@ -49,6 +51,8 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     public View mProgressView;
     public View backgroundView;
 
+    public static boolean search = false;
+
     //define our expandable list variables
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
@@ -60,6 +64,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
     //class variable
     Fixtures fixtureVar;
+    DatabaseAsync dbAsyncTask;
 
     //display the cards in a relative layout
     RelativeLayout const_action_bar = null;
@@ -84,13 +89,11 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     //define variables here
     LinearLayout calendarLayout = null;
     CompactCalendarView compactCalendarView = null;
-    Button yesterday;
-    Button today;
-    Button tomorrow;
     Button dateSearch;
     Button monthTitle;
     String date_str = "";
     TabLayout tabLayout;
+    TabLayout searchTab;
 
     private JSONArray matches = null;
     private SortMatchInfo sortMatches = null;
@@ -106,6 +109,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         fixtureVar = new Fixtures();
 
         tabLayout = (TabLayout) findViewById(R.id.tabLayout);
+        searchTab = (TabLayout) findViewById(R.id.textSearch);
 
         //define the current date
         //get current date
@@ -139,54 +143,53 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
         //retrieve data from database
         //if we do not have data in the database, then we retrieve from the API.
-        databaseHandler();
+        //databaseHandler();
+        retrieveData(true);
     }
 
     private void retrieveData(Boolean fixtures)
     {
+        //show loading bar
+        showProgress(true);
+
         retrieveData = new FixtureRetrieval(county,fixtures);
         retrieveData.execute();
         retrieveData.delegate = this;
     }
 
+    private void dbAsync()
+    {
+        String CRUD = "GET";
+
+        dbAsyncTask = new DatabaseAsync(this,"county",county);
+        dbAsyncTask.execute(CRUD);
+        dbAsyncTask.delegate = this;
+    }
+
     //this override the implemented method from FixtureRetrieval
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void processFinish(String output)
+    public void processFinish(ArrayList<MatchObj> matchList)
     {
         //remove the progress circle
         showProgress(false);
 
-        //define JSON array from string, create match objects for each match
-        JSONArray matches = null;
+        matchObjList = matchList;
 
-        try
-        {
-            //create the json array based on the match data returned
-            matches = new JSONArray(output);
+        //check to see if the database match count is the same as the match list size
 
-            ArrayList<MatchObj> matchList = null;
+        //insert into database
+        //insertIntoDB(matchList);
 
-            if(null != matches && matches.length() != 0)
-            {
-                matchList = createMatchObjArray(matches);
+        //display the data
+        initMenu(matchList,tabLayout,sortBy);
+    }
 
-                matchObjList = matchList;
-
-                if(!(matchList.size() == db.getMatchesCount(county)))
-                {
-                    //insert into database
-                    insertIntoDB(matchList);
-                }
-
-                //display the data
-                initMenu(matchList,tabLayout,sortBy);
-            }
-        }
-        catch(JSONException e)
-        {
-            System.out.print("JSON Exception error: " + e);
-        }
+    @Override
+    public void processDBQueries(ArrayList<MatchObj> matches)
+    {
+        //remove the progress circle
+        showProgress(false);
     }
 
     private void insertIntoDB(ArrayList<MatchObj> matchList)
@@ -198,12 +201,21 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         }
     }
 
+    private void databaseHandler()
+    {
+        showProgress(true);
+        dbAsync();
+    }
+
+    /*
     //method to handle the database interaction and determinations coming from the data
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void databaseHandler()
     {
         if(null != sortBy && !(sortBy.equals("")))
         {
+            dbAsync();
+
             ArrayList<MatchObj> matchList = db.getAllMatches(county);
 
             //if there is data existing, then we display that data first.
@@ -255,71 +267,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 retrieveData(true);
             }
         }
-    }
+    }*/
 
-    private ArrayList<MatchObj> createMatchObjArray(JSONArray matchArray)
-    {
-        ArrayList<MatchObj> matchList = new ArrayList<MatchObj>();
 
-        for(int i = 0; i < matchArray.length(); i++)
-        {
-            try
-            {
-                //get each match
-                JSONObject match = matchArray.getJSONObject(i);
-
-                if(null != match && match.length() != 0)
-                {
-                    MatchObj matchObj = null;
-
-                    if(null != match.getString("winner") && !match.getString("winner").equals("") && !match.getString("winner").equals("N/A"))
-                    {
-                        //create new result object
-                        //result object does contain homeTeamScore or awayTeamScore as well as winner.
-                        matchObj = new MatchObj();
-
-                        matchObj.setId(Integer.parseInt(match.getString("id")));
-                        matchObj.setHomeTeam(match.getString("homeTeam"));
-                        matchObj.setHomeTeamScore(match.getString("homeTeamScore"));
-                        matchObj.setAwayTeam(match.getString("awayTeam"));
-                        matchObj.setAwayTeamScore(match.getString("awayTeamScore"));
-                        matchObj.setTime(match.getString("time"));
-                        matchObj.setDate(match.getString("date"));
-                        matchObj.setVenue(match.getString("venue"));
-                        matchObj.setCompetition(match.getString("competition"));
-                        matchObj.setCounty(match.getString("county"));
-                        matchObj.setWinner(match.getString("winner"));
-                    }
-                    else
-                    {
-                        //create new fixture object
-                        //fixture object does not contain homeTeamScore or awayTeamScore as well as winner.
-                        matchObj = new MatchObj();
-
-                        matchObj.setId(Integer.parseInt(match.getString("id")));
-                        matchObj.setHomeTeam(match.getString("homeTeam"));
-                        matchObj.setHomeTeamScore("0-00");
-                        matchObj.setAwayTeam(match.getString("awayTeam"));
-                        matchObj.setAwayTeamScore("0-00");
-                        matchObj.setTime(match.getString("time"));
-                        matchObj.setDate(match.getString("date"));
-                        matchObj.setVenue(match.getString("venue"));
-                        matchObj.setCompetition(match.getString("competition"));
-                        matchObj.setCounty(match.getString("county"));
-                        matchObj.setWinner("N/A");
-                        //add all the match objects to the list
-                        matchList.add(i,matchObj);
-                    }
-                }
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return matchList;
-    }
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -328,18 +278,17 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         displayMatchInfo(matchList,date_str,sortBy);
 
         //init the buttons
-        yesterday = (Button)findViewById(R.id.yesterday);
-        today  = (Button)findViewById(R.id.today);
-        tomorrow = (Button)findViewById(R.id.tomorrow);
         dateSearch = (Button)findViewById(R.id.date);
 
         //tab layout logic
-        Drawable icon = (Drawable) getDrawable(R.drawable.ic_arrow_back_black_24dp);
-        Drawable dateIcon = (Drawable) getDrawable(R.drawable.ic_date_icon);
+        final Drawable backIcon = (Drawable) getDrawable(R.drawable.ic_keyboard_arrow_left_white_24dp);
+        Drawable dateIcon = (Drawable) getDrawable(R.drawable.ic_date_range_white_24dp);
+        Drawable searchIcon = (Drawable) getDrawable(R.drawable.ic_magnify_white_24dp);
 
-        tabLayout.addTab(tabLayout.newTab().setIcon(icon));
-        tabLayout.addTab(tabLayout.newTab().setText("Macth"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(backIcon));
+        tabLayout.addTab(tabLayout.newTab().setText("Today"));
         tabLayout.addTab(tabLayout.newTab().setIcon(dateIcon));
+        tabLayout.addTab(tabLayout.newTab().setIcon(searchIcon));
 
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -347,20 +296,37 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             {
                 if(tabLayout.getSelectedTabPosition() == 0)
                 {
-                    //return to previous
-                    finish();
+                    if(search)
+                    {
+                        initMenu(matchObjList,tabLayout,"");
+                    }
+                    else
+                    {
+                        //return to previous
+                        finish();
+                    }
                 }
-                else if(tabLayout.getSelectedTabPosition() == 1)
+                else if(tabLayout.getSelectedTabPosition() == 1 && !search)
                 {
-                    Toast.makeText(Fixtures.this,"Tab 2",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Fixtures.this,"Today's Matches",Toast.LENGTH_SHORT).show();
                 }
-                else if(tabLayout.getSelectedTabPosition() == 2)
+                else if(tabLayout.getSelectedTabPosition() == 2 && !search)
                 {
                     //instantiate the sorting class
                     sortMatches = new SortMatchInfo();
                     sortMatches.resetData();
                     sortMatches.setMatchesByComp(matchList,date_str,null);
                     displayCalendar(matchList,tabLayout);
+                }
+                else if(tabLayout.getSelectedTabPosition() == 3)
+                {
+                    Toast.makeText(Fixtures.this,"Search",Toast.LENGTH_SHORT).show();
+                    //remove all views and inflate auto text view
+                    search = true;
+
+                    all_match_info_display.removeAllViews();
+                    //add the new auto complete text view
+                    all_match_info_display.addView(competition_info_card.getAutoCompleteTextView());
                 }
             }
 
@@ -372,16 +338,16 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             @Override
             public void onTabReselected(TabLayout.Tab tab)
             {
-                if(tabLayout.getSelectedTabPosition() == 0)
+                if(tabLayout.getSelectedTabPosition() == 0 && !search)
                 {
                     //return to previous
                     finish();
                 }
-                else if(tabLayout.getSelectedTabPosition() == 1)
+                else if(tabLayout.getSelectedTabPosition() == 1 && !search)
                 {
-                    Toast.makeText(Fixtures.this,"Tab 2",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Fixtures.this,"Today's Matches",Toast.LENGTH_SHORT).show();
                 }
-                else if(tabLayout.getSelectedTabPosition() == 2)
+                else if(tabLayout.getSelectedTabPosition() == 2 && !search)
                 {
                     //instantiate the sorting class
                     sortMatches = new SortMatchInfo();
@@ -389,33 +355,10 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                     sortMatches.setMatchesByComp(matchList,date_str,null);
                     displayCalendar(matchList,tabLayout);
                 }
-            }
-        });
-
-
-        //set the default
-        today.setTextColor(getResources().getColor(R.color.white));
-
-        today.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                // TODO Auto-generated method stub
-                today.setTextColor(getResources().getColor(R.color.white));
-                tomorrow.setTextColor(getResources().getColor(R.color.black));
-                yesterday.setTextColor(getResources().getColor(R.color.black));
-
-                //make sure the user can see the today button
-                if(!today.toString().equals("Today"))
+                else if(tabLayout.getSelectedTabPosition() == 3 && !search)
                 {
-                    today.setText("Today");
+                    Toast.makeText(Fixtures.this,"Search",Toast.LENGTH_SHORT).show();
                 }
-
-                //instantiate the sorting class
-                sortMatches = new SortMatchInfo();
-                sortMatches.resetData();
-                all_match_info_display.removeAllViews();
-                displayMatchInfo(matchList,date_str,null);
             }
         });
     }
@@ -463,6 +406,11 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         //format date
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
+        //set the current month
+        DateFormat fmt = new SimpleDateFormat("MMMM");
+        Date curr = new Date();
+        monthTitle.setText(fmt.format(curr));
+
         //for each different date we add a marker on the calendar
         for(String date : dateList)
         {
@@ -503,8 +451,6 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 sortMatches = new SortMatchInfo();
                 sortMatches.resetData();
                 all_match_info_display.removeAllViews();
-                //set the text to be the date
-                today.setText(parseDate.toString());
                 //display the data
                 displayMatchInfo(matchList,parseDate.toString(),sortBy);
             }
@@ -622,5 +568,39 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             //display todays matches when back button is pressed
             displayMatchInfo(matchObjList,date_str,sortBy);
         }
+    }
+
+    public List<char[]> bigram(String input)
+    {
+        ArrayList<char[]> bigram = new ArrayList<char[]>();
+        for (int i = 0; i < input.length() - 1; i++)
+        {
+            char[] chars = new char[2];
+            chars[0] = input.charAt(i);
+            chars[1] = input.charAt(i+1);
+            bigram.add(chars);
+        }
+        return bigram;
+    }
+
+    public double dice(List<char[]> bigram1, List<char[]> bigram2)
+    {
+        List<char[]> copy = new ArrayList<char[]>(bigram2);
+        int matches = 0;
+        for (int i = bigram1.size(); --i >= 0;)
+        {
+            char[] bigram = bigram1.get(i);
+            for (int j = copy.size(); --j >= 0;)
+            {
+                char[] toMatch = copy.get(j);
+                if (bigram[0] == toMatch[0] && bigram[1] == toMatch[1])
+                {
+                    copy.remove(j);
+                    matches += 2;
+                    break;
+                }
+            }
+        }
+        return (double) matches / (bigram1.size() + bigram2.size());
     }
 }

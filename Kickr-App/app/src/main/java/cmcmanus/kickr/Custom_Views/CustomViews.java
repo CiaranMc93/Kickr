@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -56,6 +57,7 @@ public class CustomViews extends Activity
     LinearLayout match_data = null;
     CalendarView calendar = null;
     LinearLayout calendarCustom = null;
+    LinearLayout textSearch = null;
 
     ArrayList<RelativeLayout> cardList;
 
@@ -94,6 +96,15 @@ public class CustomViews extends Activity
         LinearLayout calendarView = (LinearLayout) inflater.inflate(R.layout.customer_cal, null);
 
         this.calendarCustom = calendarView;
+    }
+
+    public LinearLayout getAutoCompleteTextView()
+    {
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        LinearLayout textSearch = (LinearLayout) inflater.inflate(R.layout.auto_complete_text_view, null);
+
+        return textSearch;
     }
 
     public LinearLayout getCustomCal() { return calendarCustom; }
