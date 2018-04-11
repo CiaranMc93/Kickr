@@ -13,6 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.ExpandableListView;
@@ -52,6 +55,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     public View backgroundView;
 
     public static boolean search = false;
+    public static boolean tabUsed = false;
 
     //define our expandable list variables
     ExpandableListAdapter listAdapter;
@@ -94,6 +98,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     String date_str = "";
     TabLayout tabLayout;
     TabLayout searchTab;
+
+    //layout variables
+    AutoCompleteTextView textSearch;
 
     private JSONArray matches = null;
     private SortMatchInfo sortMatches = null;
@@ -275,6 +282,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void initMenu(final ArrayList<MatchObj> matchList, final TabLayout tabLayout,final String sortBy)
     {
+        //remove any existing views
+        all_match_info_display.removeAllViews();
+
         displayMatchInfo(matchList,date_str,sortBy);
 
         //init the buttons
@@ -285,10 +295,13 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         Drawable dateIcon = (Drawable) getDrawable(R.drawable.ic_date_range_white_24dp);
         Drawable searchIcon = (Drawable) getDrawable(R.drawable.ic_magnify_white_24dp);
 
-        tabLayout.addTab(tabLayout.newTab().setIcon(backIcon));
-        tabLayout.addTab(tabLayout.newTab().setText("Today"));
-        tabLayout.addTab(tabLayout.newTab().setIcon(dateIcon));
-        tabLayout.addTab(tabLayout.newTab().setIcon(searchIcon));
+        if(!tabUsed)
+        {
+            tabLayout.addTab(tabLayout.newTab().setIcon(backIcon));
+            tabLayout.addTab(tabLayout.newTab().setText("Today"));
+            tabLayout.addTab(tabLayout.newTab().setIcon(dateIcon));
+            tabLayout.addTab(tabLayout.newTab().setIcon(searchIcon));
+        }
 
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -320,13 +333,51 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 }
                 else if(tabLayout.getSelectedTabPosition() == 3)
                 {
-                    Toast.makeText(Fixtures.this,"Search",Toast.LENGTH_SHORT).show();
                     //remove all views and inflate auto text view
                     search = true;
 
                     all_match_info_display.removeAllViews();
                     //add the new auto complete text view
-                    all_match_info_display.addView(competition_info_card.getAutoCompleteTextView());
+                    textSearch = competition_info_card.getAutoCompleteTextView();
+
+                    List<String> list = new ArrayList<String>();
+
+                    //add all teams to the list so it can be searched
+                    for(int i=0;i<matchObjList.size();i++)
+                    {
+                        //make sure we only add names to the list if they are not already there
+                        if(!(list.contains(matchObjList.get(i).getHomeTeam()) || list.contains(matchObjList.get(i).getAwayTeam())))
+                        {
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
+                        }
+                    }
+
+                    CustomArrayAdapter adapter = new CustomArrayAdapter(Fixtures.this,
+                            android.R.layout.simple_dropdown_item_1line, list);
+
+                    textSearch.setAdapter(adapter);
+
+                    textSearch.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                    {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                        {
+                            String selection = (String)parent.getItemAtPosition(position);
+
+                            ArrayList<MatchObj> filtered = filterMatchObjs(selection);
+                            //clear the views
+                            all_match_info_display.removeAllViews();
+                            //set flag to be true
+                            tabUsed = true;
+                            search = false;
+
+                            initMenu(filtered,tabLayout,"team");
+                        }
+                    });
+
+                    all_match_info_display.addView(textSearch);
                 }
             }
 
@@ -357,10 +408,69 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                 }
                 else if(tabLayout.getSelectedTabPosition() == 3 && !search)
                 {
-                    Toast.makeText(Fixtures.this,"Search",Toast.LENGTH_SHORT).show();
+                    //remove all views and inflate auto text view
+                    search = true;
+
+                    all_match_info_display.removeAllViews();
+                    //add the new auto complete text view
+                    textSearch = competition_info_card.getAutoCompleteTextView();
+
+                    List<String> list = new ArrayList<String>();
+
+                    //add all teams to the list so it can be searched
+                    for(int i=0;i<matchObjList.size();i++)
+                    {
+                        //make sure we only add names to the list if they are not already there
+                        if(!(list.contains(matchObjList.get(i).getHomeTeam()) || list.contains(matchObjList.get(i).getAwayTeam())))
+                        {
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
+                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
+                        }
+                    }
+
+                    CustomArrayAdapter adapter = new CustomArrayAdapter(Fixtures.this,
+                            android.R.layout.simple_dropdown_item_1line, list);
+
+                    textSearch.setAdapter(adapter);
+
+                    textSearch.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                    {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                        {
+                            String selection = (String)parent.getItemAtPosition(position);
+
+                            ArrayList<MatchObj> filtered = filterMatchObjs(selection);
+                            //clear the views
+                            all_match_info_display.removeAllViews();
+                            //set flag to be true
+                            tabUsed = true;
+                            search = false;
+
+                            initMenu(filtered,tabLayout,"team");
+                        }
+                    });
+
+                    all_match_info_display.addView(textSearch);
                 }
             }
         });
+    }
+
+    private  ArrayList<MatchObj> filterMatchObjs(String selection)
+    {
+        ArrayList<MatchObj> filteredMatches = new ArrayList<MatchObj>();
+
+        for(int i=0;i<matchObjList.size();i++)
+        {
+            if(matchObjList.get(i).getAwayTeam().equals(selection) || matchObjList.get(i).getHomeTeam().equals(selection))
+            {
+                filteredMatches.add(filteredMatches.listIterator().nextIndex(),matchObjList.get(i));
+            }
+        }
+
+        return filteredMatches;
     }
 
     private void displayCalendar(final ArrayList<MatchObj> matchList, TabLayout tabLayout)
@@ -514,7 +624,14 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
         if(null != sortBy && !(sortBy.equals("")))
         {
-            compList = sortMatches.setMatchesByComp(matchList,date,sortBy);
+            if(sortBy.equals("team"))
+            {
+                compList = sortMatches.setMatchesByComp(matchList,"",null);
+            }
+            else
+            {
+                compList = sortMatches.setMatchesByComp(matchList,date,sortBy);
+            }
         }
         else
         {

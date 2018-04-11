@@ -98,11 +98,11 @@ public class CustomViews extends Activity
         this.calendarCustom = calendarView;
     }
 
-    public LinearLayout getAutoCompleteTextView()
+    public AutoCompleteTextView getAutoCompleteTextView()
     {
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        LinearLayout textSearch = (LinearLayout) inflater.inflate(R.layout.auto_complete_text_view, null);
+        AutoCompleteTextView textSearch = (AutoCompleteTextView) inflater.inflate(R.layout.auto_complete_text_view, null);
 
         return textSearch;
     }
