@@ -125,7 +125,7 @@ public class CustomViews extends Activity
 
     public CardView getCard() { return view; };
 
-    public void setMatchDataLayout(String league, List<MatchObj> matches)
+    public void setMatchDataLayout(String league, List<MatchObj> matches,String sortType)
     {
         matchList = matches;
         cardView = new CardView(context);
@@ -218,6 +218,14 @@ public class CustomViews extends Activity
                 TextView away = (TextView)this.match_info_layout.findViewById(R.id.team2);
                 away.setText(matches.get(j).getAwayTeam());
                 away.setTextSize(16);
+
+                if(sortType.equals("team") || sortType.equals("comp"))
+                {
+                    TextView date = (TextView)this.match_info_layout.findViewById(R.id.date);
+                    date.setVisibility(View.VISIBLE);
+                    date.setText(matches.get(j).getDate());
+                    date.setTextSize(16);
+                }
 
                 //set the layout id to be the match id
                 this.match_info_layout.setId(matches.get(j).getId());

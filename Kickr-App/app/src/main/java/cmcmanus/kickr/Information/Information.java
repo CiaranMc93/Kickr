@@ -45,20 +45,6 @@ public class Information extends AppCompatActivity
         date.setText("Date: " + bundle.getString("date"));
         time.setText("Time: " + bundle.getString("time"));
         venue.setText("Venue: " + bundle.getString("venue"));
-
-        comp.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                //send the selected match to display the information
-                Intent match = new Intent(Information.this,Fixtures.class);
-                match.putExtra("sortby","competition-" + bundle.getString("comp"));
-                match.putExtra("county",bundle.getString("county"));
-
-                Information.this.startActivity(match);
-            }
-        });
     }
 
     @Override

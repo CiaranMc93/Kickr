@@ -3,6 +3,9 @@ package cmcmanus.kickr.Async_Tasks;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 
 import cmcmanus.kickr.Custom_Objects.MatchObj;
@@ -20,6 +23,7 @@ public class DatabaseAsync extends AsyncTask<String, Void, ArrayList<MatchObj>>
     String retrieval;
     String typeRetrieve;
     ArrayList<MatchObj> matchList;
+    ArrayList<MatchObj> matchesToInsert;
 
     public AsyncResponse delegate = null;
 
@@ -27,6 +31,12 @@ public class DatabaseAsync extends AsyncTask<String, Void, ArrayList<MatchObj>>
     {
         this.retrieval = retrieve.toLowerCase();
         this.typeRetrieve = typeRetrieve;
+        this.db = new DBAdapter(context);
+    }
+
+    public DatabaseAsync(Context context, ArrayList<MatchObj> matchList)
+    {
+        this.matchesToInsert = matchList;
         this.db = new DBAdapter(context);
     }
 
@@ -43,9 +53,14 @@ public class DatabaseAsync extends AsyncTask<String, Void, ArrayList<MatchObj>>
                 matchList = db.getAllMatches(retrieval);
                 break;
         }
-        delegate.processDBQueries(matchList);
 
         return matchList;
+    }
+
+    @Override
+    protected void onPostExecute(final ArrayList<MatchObj> matchList)
+    {
+        delegate.processDBQueries(matchList);
     }
 
     @Override

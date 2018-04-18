@@ -3,7 +3,7 @@ package cmcmanus.kickr;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -13,30 +13,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CalendarView;
-import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.github.sundeepk.compactcalendarview.domain.Event;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,12 +50,10 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
     public static boolean search = false;
     public static boolean tabUsed = false;
-
-    //define our expandable list variables
-    ExpandableListAdapter listAdapter;
-    ExpandableListView expListView;
-    List<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
+    public static boolean calInUse = false;
+    public boolean dbSucess = false;
+    public boolean noFutureMatches = false;
+    public boolean isLoading = false;
 
     //network variable
     FixtureRetrieval retrieveData = null;
@@ -74,14 +66,8 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     RelativeLayout const_action_bar = null;
     public static LinearLayout all_match_info_display = null;
     CustomViews competition_info_card = null;
-    CalendarView calendar = null;
-
-    //button variable
-    Button info;
 
     //define variables needed
-    private String countyName = "";
-    private String jsonDataResult = "";
     private ArrayList<JSONObject> match = null;
     private ArrayList<MatchObj> matchObjList = null;
     private DBAdapter db = null;
@@ -118,6 +104,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         tabLayout = (TabLayout) findViewById(R.id.tabLayout);
         searchTab = (TabLayout) findViewById(R.id.textSearch);
 
+        //reset tabUsed
+        tabUsed = false;
+
         //define the current date
         //get current date
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -130,31 +119,17 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
         Bundle bundle = getIntent().getExtras();
 
-        if(null == bundle.getString("sortby") || bundle.getString("sortby").equals(""))
-        {
-            county = bundle.getString("county");
-        }
-        else
-        {
-            sortBy = bundle.getString("sortby");
-            county = bundle.getString("county");
-        }
+        county = bundle.getString("county");
 
         const_action_bar = (RelativeLayout)findViewById(R.id.action_bar_const);
 
         all_match_info_display = (LinearLayout)findViewById(R.id.comp_display);
 
-        //instantiate the database
-        db = new DBAdapter(this);
-        //db.onUpgrade(db.getWritableDatabase(),1,2);
-
-        //retrieve data from database
-        //if we do not have data in the database, then we retrieve from the API.
-        //databaseHandler();
-        retrieveData(true);
+        //retrieve the data in the database before we query the API
+        queryDB();
     }
 
-    private void retrieveData(Boolean fixtures)
+    private void queryAPI(Boolean fixtures)
     {
         //show loading bar
         showProgress(true);
@@ -162,15 +137,17 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         retrieveData = new FixtureRetrieval(county,fixtures);
         retrieveData.execute();
         retrieveData.delegate = this;
+        //calls processFinish()
     }
 
-    private void dbAsync()
+    private void queryDB()
     {
         String CRUD = "GET";
 
         dbAsyncTask = new DatabaseAsync(this,"county",county);
         dbAsyncTask.execute(CRUD);
         dbAsyncTask.delegate = this;
+        //calls processDBQueries()
     }
 
     //this override the implemented method from FixtureRetrieval
@@ -178,25 +155,60 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     @Override
     public void processFinish(ArrayList<MatchObj> matchList)
     {
+        isLoading = false;
+        noFutureMatches = false;
+
         //remove the progress circle
         showProgress(false);
 
         matchObjList = matchList;
 
-        //check to see if the database match count is the same as the match list size
-
-        //insert into database
-        //insertIntoDB(matchList);
-
         //display the data
-        initMenu(matchList,tabLayout,sortBy);
+        initMenu(matchList,tabLayout,"");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void processDBQueries(ArrayList<MatchObj> matches)
     {
         //remove the progress circle
         showProgress(false);
+
+        //check to see if we retrieved the data from the database
+        if(null == matches || matches.size() == 0)
+        {
+            isLoading = true;
+            //query with load
+            showProgress(true);
+            tabUsed = true;
+            //retrieve the data from the API
+            queryAPI(true);
+        }
+        else
+        {
+            dbSucess = true;
+            matchObjList = matches;
+
+            //create the match data layout
+            initMenu(matchObjList,tabLayout,"");
+
+            //tab layout already loaded so do not try again
+            if(noFutureMatches)
+            {
+                isLoading = true;
+                //query with load
+                showProgress(true);
+                tabUsed = true;
+                queryAPI(true);
+            }
+            else
+            {
+                isLoading = false;
+                tabUsed = true;
+                //query in background
+                queryAPI(true);
+            }
+        }
     }
 
     private void insertIntoDB(ArrayList<MatchObj> matchList)
@@ -211,77 +223,14 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
     private void databaseHandler()
     {
         showProgress(true);
-        dbAsync();
+        queryDB();
     }
-
-    /*
-    //method to handle the database interaction and determinations coming from the data
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void databaseHandler()
-    {
-        if(null != sortBy && !(sortBy.equals("")))
-        {
-            dbAsync();
-
-            ArrayList<MatchObj> matchList = db.getAllMatches(county);
-
-            //if there is data existing, then we display that data first.
-            if(null != matchList && !(matchList.size() == 0))
-            {
-                initMenu(matchList,tabLayout,sortBy);
-            }
-        }
-        else
-        {
-            ArrayList<MatchObj> matchList = db.getAllMatches(county);
-
-            //if there is data existing, then we display that data first.
-            if(null != matchList && !(matchList.size() == 0))
-            {
-                //set matchlist
-                matchObjList = matchList;
-
-                //check to make sure that we are on the current date
-                String currDate = db.getDate();
-
-                //if current date is not null and not empty
-                if(null != currDate && !(currDate.equals("")))
-                {
-                    if(!currDate.contains(date_str))
-                    {
-                        db.updateDate(date_str);
-                        //retrieve the data from the API once per day to update the fixtures
-                        //this is done in the background
-                        retrieveData(true);
-                    }
-                    else
-                    {
-                        //display database data
-                        initMenu(matchList,tabLayout,sortBy);
-                    }
-                }
-                else
-                {
-                    //initial insert
-                    db.insertDate(date_str);
-                    initMenu(matchList,tabLayout,sortBy);
-                }
-            }
-            else
-            {
-                //retrieve the data from the API initial
-                showProgress(true);
-                retrieveData(true);
-            }
-        }
-    }*/
-
-
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void initMenu(final ArrayList<MatchObj> matchList, final TabLayout tabLayout,final String sortBy)
     {
+        calInUse = false;
+
         //remove any existing views
         all_match_info_display.removeAllViews();
 
@@ -309,7 +258,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             {
                 if(tabLayout.getSelectedTabPosition() == 0)
                 {
-                    if(search)
+                    if(search || calInUse)
                     {
                         initMenu(matchObjList,tabLayout,"");
                     }
@@ -319,22 +268,29 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                         finish();
                     }
                 }
-                else if(tabLayout.getSelectedTabPosition() == 1 && !search)
+                else if(tabLayout.getSelectedTabPosition() == 1 && !isLoading)
                 {
-                    Toast.makeText(Fixtures.this,"Today's Matches",Toast.LENGTH_SHORT).show();
+                    tabUsed = true;
+                    calInUse = false;
+                    search = false;
+                    //reset the matches to today
+                    initMenu(matchObjList,tabLayout,"");
                 }
-                else if(tabLayout.getSelectedTabPosition() == 2 && !search)
+                else if(tabLayout.getSelectedTabPosition() == 2 && !isLoading)
                 {
+                    tabUsed = true;
+                    search = false;
                     //instantiate the sorting class
                     sortMatches = new SortMatchInfo();
                     sortMatches.resetData();
                     sortMatches.setMatchesByComp(matchList,date_str,null);
-                    displayCalendar(matchList,tabLayout);
+                    displayCalendar(matchList);
                 }
-                else if(tabLayout.getSelectedTabPosition() == 3)
+                else if(tabLayout.getSelectedTabPosition() == 3 && !isLoading )
                 {
                     //remove all views and inflate auto text view
                     search = true;
+                    calInUse = false;
 
                     all_match_info_display.removeAllViews();
                     //add the new auto complete text view
@@ -345,12 +301,26 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                     //add all teams to the list so it can be searched
                     for(int i=0;i<matchObjList.size();i++)
                     {
-                        //make sure we only add names to the list if they are not already there
-                        if(!(list.contains(matchObjList.get(i).getHomeTeam()) || list.contains(matchObjList.get(i).getAwayTeam())))
+                        //if the list is empty,
+                        if(!(list.isEmpty()))
+                        {
+                            //make sure we only add names to the list if they are not already there
+                            if(!(list.contains(matchObjList.get(i).getHomeTeam())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
+                            }
+                            else if(!(list.contains(matchObjList.get(i).getAwayTeam())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
+                            }
+                            else if(!(list.contains(matchObjList.get(i).getCompetition())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
+                            }
+                        }
+                        else
                         {
                             list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
-                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
-                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
                         }
                     }
 
@@ -372,6 +342,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                             //set flag to be true
                             tabUsed = true;
                             search = false;
+
+                            InputMethodManager inputManager = (InputMethodManager) Fixtures.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
                             initMenu(filtered,tabLayout,"team");
                         }
@@ -389,27 +362,41 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             @Override
             public void onTabReselected(TabLayout.Tab tab)
             {
-                if(tabLayout.getSelectedTabPosition() == 0 && !search)
+                if(tabLayout.getSelectedTabPosition() == 0)
                 {
-                    //return to previous
-                    finish();
+                    if(search || calInUse)
+                    {
+                        initMenu(matchObjList,tabLayout,"");
+                    }
+                    else
+                    {
+                        //return to previous
+                        finish();
+                    }
                 }
-                else if(tabLayout.getSelectedTabPosition() == 1 && !search)
+                else if(tabLayout.getSelectedTabPosition() == 1 && !isLoading)
                 {
-                    Toast.makeText(Fixtures.this,"Today's Matches",Toast.LENGTH_SHORT).show();
+                    tabUsed = true;
+                    calInUse = false;
+                    search = false;
+                    //reset the matches to today
+                    initMenu(matchObjList,tabLayout,"");
                 }
-                else if(tabLayout.getSelectedTabPosition() == 2 && !search)
+                else if(tabLayout.getSelectedTabPosition() == 2 && !isLoading)
                 {
+                    search = false;
                     //instantiate the sorting class
                     sortMatches = new SortMatchInfo();
                     sortMatches.resetData();
                     sortMatches.setMatchesByComp(matchList,date_str,null);
-                    displayCalendar(matchList,tabLayout);
+                    displayCalendar(matchList);
                 }
-                else if(tabLayout.getSelectedTabPosition() == 3 && !search)
+                else if(tabLayout.getSelectedTabPosition() == 3 && !isLoading)
                 {
                     //remove all views and inflate auto text view
                     search = true;
+                    tabUsed = true;
+                    calInUse = false;
 
                     all_match_info_display.removeAllViews();
                     //add the new auto complete text view
@@ -420,12 +407,26 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                     //add all teams to the list so it can be searched
                     for(int i=0;i<matchObjList.size();i++)
                     {
-                        //make sure we only add names to the list if they are not already there
-                        if(!(list.contains(matchObjList.get(i).getHomeTeam()) || list.contains(matchObjList.get(i).getAwayTeam())))
+                        //if the list is empty,
+                        if(!(list.isEmpty()))
+                        {
+                            //make sure we only add names to the list if they are not already there
+                            if(!(list.contains(matchObjList.get(i).getHomeTeam())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
+                            }
+                            else if(!(list.contains(matchObjList.get(i).getAwayTeam())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
+                            }
+                            else if(!(list.contains(matchObjList.get(i).getCompetition())))
+                            {
+                                list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
+                            }
+                        }
+                        else
                         {
                             list.add(list.listIterator().nextIndex(),matchObjList.get(i).getHomeTeam());
-                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getAwayTeam());
-                            list.add(list.listIterator().nextIndex(),matchObjList.get(i).getCompetition());
                         }
                     }
 
@@ -448,6 +449,9 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
                             tabUsed = true;
                             search = false;
 
+                            InputMethodManager inputManager = (InputMethodManager) Fixtures.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
                             initMenu(filtered,tabLayout,"team");
                         }
                     });
@@ -464,7 +468,7 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
 
         for(int i=0;i<matchObjList.size();i++)
         {
-            if(matchObjList.get(i).getAwayTeam().equals(selection) || matchObjList.get(i).getHomeTeam().equals(selection))
+            if(matchObjList.get(i).getAwayTeam().equals(selection) || matchObjList.get(i).getHomeTeam().equals(selection) || matchObjList.get(i).getCompetition().equals(selection))
             {
                 filteredMatches.add(filteredMatches.listIterator().nextIndex(),matchObjList.get(i));
             }
@@ -473,8 +477,12 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         return filteredMatches;
     }
 
-    private void displayCalendar(final ArrayList<MatchObj> matchList, TabLayout tabLayout)
+    private void displayCalendar(final ArrayList<MatchObj> matchList)
     {
+        //calender in use flag
+        calInUse = true;
+        tabUsed = true;
+
         //set the calendar view
         CustomViews compact = new CustomViews(Fixtures.this);
         compact.setCustomerCalendar();
@@ -612,41 +620,37 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         }
     }
 
-
+    //method to display the matches to the user
     private void displayMatchInfo(ArrayList<MatchObj> matchList, String date,String sortBy)
     {
         sortMatches = new SortMatchInfo();
-        LinearLayout cardLayout = null;
         CardView cardView = null;
 
         //set the different types of matches by competition
-        Map<String, List<MatchObj>> compList;
+        Map<String, List<MatchObj>> filterList = null;
 
         if(null != sortBy && !(sortBy.equals("")))
         {
-            if(sortBy.equals("team"))
+            if(sortBy.equals("team") || sortBy.equals("comp") || sortBy.equals("sort"))
             {
-                compList = sortMatches.setMatchesByComp(matchList,"",null);
-            }
-            else
-            {
-                compList = sortMatches.setMatchesByComp(matchList,date,sortBy);
+                filterList = sortMatches.setMatchesByComp(matchList,"",sortBy);
             }
         }
         else
         {
-            compList = sortMatches.setMatchesByComp(matchList,date,null);
+            filterList = sortMatches.setMatchesByComp(matchList,date,null);
         }
 
         //if there are no scheduled matches, we need to display this to user
-        if(compList.size() == 0)
+        if(filterList == null || filterList.size() == 0)
         {
+            noFutureMatches = true;
             // Initialize a new custom CardView
             competition_info_card = new CustomViews(Fixtures.this);
 
             ArrayList<MatchObj> obj = null;
 
-            competition_info_card.setMatchDataLayout("",null);
+            competition_info_card.setMatchDataLayout("",null,sortBy);
 
             //create a new card view with our custom card
             cardView = competition_info_card.getCard();
@@ -656,23 +660,27 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
         }
         else
         {
-            //for each entry in the map should have a key and matches relating to the key
-            for (Map.Entry<String, List<MatchObj>> entry : compList.entrySet())
+            if(filterList != null)
             {
-                String key = entry.getKey();
-                List<MatchObj> value = entry.getValue();
+                noFutureMatches = false;
+                //for each entry in the map should have a key and matches relating to the key
+                for (Map.Entry<String, List<MatchObj>> entry : filterList.entrySet())
+                {
+                    String key = entry.getKey();
+                    List<MatchObj> value = entry.getValue();
 
-                //for each object in the json array
-                // Initialize a new custom CardView
-                competition_info_card = new CustomViews(Fixtures.this);
+                    //for each object in the json array
+                    // Initialize a new custom CardView
+                    competition_info_card = new CustomViews(Fixtures.this);
 
-                competition_info_card.setMatchDataLayout(key,value);
+                    competition_info_card.setMatchDataLayout(key,value,sortBy);
 
-                //create a new card view with our custom card
-                cardView = competition_info_card.getCard();
+                    //create a new card view with our custom card
+                    cardView = competition_info_card.getCard();
 
-                //add cardview to linearLayout
-                all_match_info_display.addView(cardView);
+                    //add cardview to linearLayout
+                    all_match_info_display.addView(cardView);
+                }
             }
         }
     }
@@ -685,39 +693,5 @@ public class Fixtures extends AppCompatActivity implements AsyncResponse
             //display todays matches when back button is pressed
             displayMatchInfo(matchObjList,date_str,sortBy);
         }
-    }
-
-    public List<char[]> bigram(String input)
-    {
-        ArrayList<char[]> bigram = new ArrayList<char[]>();
-        for (int i = 0; i < input.length() - 1; i++)
-        {
-            char[] chars = new char[2];
-            chars[0] = input.charAt(i);
-            chars[1] = input.charAt(i+1);
-            bigram.add(chars);
-        }
-        return bigram;
-    }
-
-    public double dice(List<char[]> bigram1, List<char[]> bigram2)
-    {
-        List<char[]> copy = new ArrayList<char[]>(bigram2);
-        int matches = 0;
-        for (int i = bigram1.size(); --i >= 0;)
-        {
-            char[] bigram = bigram1.get(i);
-            for (int j = copy.size(); --j >= 0;)
-            {
-                char[] toMatch = copy.get(j);
-                if (bigram[0] == toMatch[0] && bigram[1] == toMatch[1])
-                {
-                    copy.remove(j);
-                    matches += 2;
-                    break;
-                }
-            }
-        }
-        return (double) matches / (bigram1.size() + bigram2.size());
     }
 }

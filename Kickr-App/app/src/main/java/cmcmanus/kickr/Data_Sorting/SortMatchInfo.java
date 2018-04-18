@@ -35,6 +35,7 @@ public class SortMatchInfo
         ArrayList<MatchObj> matchObjToBeSorted = new ArrayList<MatchObj>();
         //create list of times in ascending order
         ArrayList<String> matchTimes = new ArrayList<String>();
+        ArrayList<MatchObj> dateSortedMatches = new ArrayList<MatchObj>();
 
         //parse date from string
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
@@ -44,56 +45,49 @@ public class SortMatchInfo
         String currDateStr = sdf.format(currDate);
 
         //for each match in the list of returned matches
-        for(int j=0; j < matchList.size(); j++)
-        {
+        for(int j=0; j < matchList.size(); j++) {
             //check to make sure any fixtures that have already taken place are not shown to the user.
-            try
-            {
+            try {
                 //get date variables
                 Date date1 = sdf.parse(currDateStr);
                 Date date2 = sdf.parse(matchList.get(j).getDate());
 
                 //check is after
-                if(date1.after(date2))
+                if (date1.after(date2))
                 {
-                    matchList.remove(j);
+
                 }
-            }
-            catch (ParseException e)
-            {
-                Log.e("ERROR","Date Parse Exception: " + e);
-            }
-
-            if(null != sortByInput && !(sortByInput.equals("")))
-            {
-                //determine the type of input passed in
-                String[] inputSplit = sortByInput.split("-");
-
-                String inputType = inputSplit[1];
-
-                if(inputSplit[0].contains("competition"))
+                else
                 {
-                    //check to make sure we are sorting matches for the competition
-                    if(inputType.equals(matchList.get(j).getCompetition()))
-                    {
-                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
-                    }
+                    dateSortedMatches.add(matchList.get(j));
                 }
+            } catch (ParseException e) {
+                Log.e("ERROR", "Date Parse Exception: " + e);
             }
-            else
+        }
+
+        if(dateSortedMatches.size() == 0)
+        {
+            return null;
+        }
+
+        for(int k=0;k<dateSortedMatches.size();k++)
+        {
+            //make sure we sort by date ONLY if we are not searching by team
+            if(sortByInput == null || !sortByInput.equals("sort") || !sortByInput.equals("team") || !sortByInput.equals("comp"))
             {
                 //check to make sure we are sorting matches for todays date
-                if(date.equals(matchList.get(j).getDate()))
+                if(date.equals(matchList.get(k).getDate()))
                 {
-                    if(!matchTimes.contains(matchList.get(j).getTime()))
+                    if(!matchTimes.contains(matchList.get(k).getTime()))
                     {
                         //put all the times of todays matches in a list
-                        matchTimes.add(matchTimes.listIterator().nextIndex(),matchList.get(j).getTime());
-                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                        matchTimes.add(matchTimes.listIterator().nextIndex(),matchList.get(k).getTime());
+                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(k));
                     }
                     else
                     {
-                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(j));
+                        matchObjToBeSorted.add(matchObjToBeSorted.listIterator().nextIndex(),matchList.get(k));
                     }
                 }
             }
@@ -121,7 +115,14 @@ public class SortMatchInfo
         }
         else
         {
-            sortList = matchObjToBeSorted;
+            if(matchObjToBeSorted.size() == 0)
+            {
+                sortList = matchList;
+            }
+            else
+            {
+                sortList = matchObjToBeSorted;
+            }
         }
 
         //sort by competition
